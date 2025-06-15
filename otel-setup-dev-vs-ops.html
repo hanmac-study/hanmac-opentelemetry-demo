@@ -3,283 +3,780 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenTelemetry Dev vs Ops 역할 비교</title>
+    <title>OpenTelemetry: Dev vs Ops 역할</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            box-sizing: border-box;
         }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 4s infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
         }
+        
         h1 {
             text-align: center;
-            color: #333;
-            margin-bottom: 40px;
-        }
-        .comparison-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-        .role-card {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-        .role-card:hover {
-            transform: translateY(-5px);
-        }
-        .dev-card {
-            border-left: 5px solid #4CAF50;
-        }
-        .ops-card {
-            border-left: 5px solid #2196F3;
-        }
-        .role-title {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .role-icon {
-            width: 60px;
-            height: 60px;
-            margin-right: 15px;
-            background-size: contain;
-        }
-        .dev-icon {
-            background-color: #E8F5E9;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-        }
-        .ops-icon {
-            background-color: #E3F2FD;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-        }
-        h2 {
-            margin: 0;
-            color: #333;
-        }
-        .role-description {
-            color: #666;
-            margin-bottom: 20px;
-        }
-        .features {
-            list-style: none;
-            padding: 0;
-        }
-        .features li {
+            font-size: 3rem;
             margin-bottom: 10px;
-            padding-left: 25px;
-            position: relative;
+            background: linear-gradient(120deg, #3b82f6, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 5s ease infinite;
+            background-size: 200% 200%;
         }
-        .features li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #94a3b8;
+            margin-bottom: 50px;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 150px 1fr;
+            gap: 30px;
+            align-items: start;
+            margin-bottom: 60px;
+        }
+        
+        .team-section {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .team-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dev-section {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.02));
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .ops-section {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.05), rgba(236, 72, 153, 0.02));
+            border-color: rgba(236, 72, 153, 0.3);
+        }
+        
+        .team-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .team-icon {
+            font-size: 3rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .dev-section .team-icon {
+            animation-delay: 0s;
+        }
+        
+        .ops-section .team-icon {
+            animation-delay: 1.5s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .team-title {
+            font-size: 2rem;
             font-weight: bold;
         }
-        .dev-card .features li:before {
-            color: #4CAF50;
+        
+        .dev-section .team-title {
+            color: #3b82f6;
         }
-        .ops-card .features li:before {
-            color: #2196F3;
+        
+        .ops-section .team-title {
+            color: #ec4899;
         }
-        .workflow-section {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
+        
+        .role-list {
             margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .workflow-diagram {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 30px 0;
-            position: relative;
-        }
-        .workflow-step {
-            flex: 1;
-            text-align: center;
+        
+        .role-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
             padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin: 0 10px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .role-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .role-item:hover::before {
+            left: 100%;
+        }
+        
+        .role-item:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .role-title {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .role-icon {
+            font-size: 1.5rem;
+        }
+        
+        .role-desc {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .connector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
             position: relative;
         }
-        .workflow-step.dev {
-            background: #E8F5E9;
+        
+        .connector-icon {
+            font-size: 4rem;
+            animation: pulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.5));
         }
-        .workflow-step.ops {
-            background: #E3F2FD;
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
         }
-        .arrow {
+        
+        .connector-line {
             position: absolute;
-            right: -25px;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
             top: 50%;
             transform: translateY(-50%);
-            font-size: 24px;
-            color: #999;
+            z-index: -1;
+            opacity: 0.5;
         }
-        .key-differences {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        
+        .tools-section {
+            background: rgba(139, 92, 246, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            margin-bottom: 40px;
         }
-        .difference-item {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        
+        .tools-title {
+            font-size: 1.8rem;
             margin-bottom: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
+            text-align: center;
+            color: #8b5cf6;
         }
-        .difference-label {
-            font-weight: bold;
-            color: #555;
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .tool-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+            background: rgba(139, 92, 246, 0.1);
+        }
+        
+        .tool-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .tool-name {
+            font-size: 1.1rem;
             margin-bottom: 5px;
         }
-        @media (max-width: 768px) {
-            .comparison-grid {
+        
+        .tool-type {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        
+        .workflow-section {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.02));
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            margin-bottom: 40px;
+        }
+        
+        .workflow-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #22c55e;
+        }
+        
+        .workflow-timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .workflow-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: slideIn 0.6s ease-out forwards;
+        }
+        
+        .workflow-item:nth-child(1) { animation-delay: 0.1s; }
+        .workflow-item:nth-child(2) { animation-delay: 0.2s; }
+        .workflow-item:nth-child(3) { animation-delay: 0.3s; }
+        .workflow-item:nth-child(4) { animation-delay: 0.4s; }
+        .workflow-item:nth-child(5) { animation-delay: 0.5s; }
+        .workflow-item:nth-child(6) { animation-delay: 0.6s; }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .workflow-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .workflow-content {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .workflow-actor {
+            font-size: 0.9rem;
+            color: #22c55e;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .workflow-action {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .workflow-detail {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        
+        .collaboration-zone {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(251, 191, 36, 0.02));
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            text-align: center;
+        }
+        
+        .collaboration-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #fbbf24;
+        }
+        
+        .collaboration-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .collaboration-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .collaboration-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+            background: rgba(251, 191, 36, 0.05);
+        }
+        
+        .collaboration-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .collaboration-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #fbbf24;
+        }
+        
+        .collaboration-desc {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 968px) {
+            .main-grid {
                 grid-template-columns: 1fr;
+                gap: 40px;
             }
-            .workflow-diagram {
-                flex-direction: column;
+            
+            .connector {
+                transform: rotate(90deg);
+                height: 100px;
             }
-            .arrow {
-                display: none;
-            }
-            .difference-item {
-                grid-template-columns: 1fr;
+            
+            h1 {
+                font-size: 2rem;
             }
         }
     </style>
 </head>
 <body>
+    <div class="stars" id="stars"></div>
+    
     <div class="container">
-        <h1>OpenTelemetry: Dev vs Ops 접근 방식</h1>
-
-        <div class="comparison-grid">
-            <div class="role-card dev-card">
-                <div class="role-title">
-                    <div class="role-icon dev-icon">👨‍💻</div>
-                    <h2>개발자 (Dev)</h2>
+        <h1>OpenTelemetry: Dev vs Ops</h1>
+        <p class="subtitle">개발팀과 운영팀의 역할과 협업</p>
+        
+        <div class="main-grid">
+            <div class="team-section dev-section">
+                <div class="team-header">
+                    <span class="team-icon">👨‍💻</span>
+                    <h2 class="team-title">Dev Team</h2>
                 </div>
-                <p class="role-description">애플리케이션 코드에 직접 계측을 추가하는 개발자 중심 접근</p>
-                <ul class="features">
-                    <li><strong>코드 레벨 계측</strong>: 소스 코드에 직접 추적 코드 삽입</li>
-                    <li><strong>라이브러리/SDK 사용</strong>: 언어별 OpenTelemetry SDK 활용</li>
-                    <li><strong>세밀한 제어</strong>: 특정 함수, API 엔드포인트 추적</li>
-                    <li><strong>커스텀 메트릭</strong>: 비즈니스 로직에 맞는 메트릭 정의</li>
-                    <li><strong>개발 단계 통합</strong>: CI/CD 파이프라인에 포함</li>
-                </ul>
+                
+                <div class="role-list">
+                    <div class="role-item">
+                        <div class="role-title">
+                            <span class="role-icon">📝</span>
+                            <span>애플리케이션 계측</span>
+                        </div>
+                        <p class="role-desc">코드에 OpenTelemetry SDK를 통합하고 자동/수동 계측을 구현합니다.</p>
+                    </div>
+                    
+                    <div class="role-item">
+                        <div class="role-title">
+                            <span class="role-icon">📊</span>
+                            <span>커스텀 메트릭 정의</span>
+                        </div>
+                        <p class="role-desc">비즈니스 로직에 맞는 커스텀 메트릭과 이벤트를 생성합니다.</p>
+                    </div>
+                    
+                    <div class="role-item">
+                        <div class="role-title">
+                            <span class="role-icon">🔗</span>
+                            <span>트레이스 컨텍스트 전파</span>
+                        </div>
+                        <p class="role-desc">마이크로서비스 간 요청 추적을 위한 컨텍스트를 구현합니다.</p>
+                    </div>
+                    
+                    <div class="role-item">
+                        <div class="role-title">
+                            <span class="role-icon">🏷️</span>
+                            <span>속성과 태그 추가</span>
+                        </div>
+                        <p class="role-desc">디버깅과 필터링을 위한 의미있는 메타데이터를 추가합니다.</p>
+                    </div>
+                    
+                    <div class="role-item">
+                        <div class="role-title">
+                            <span class="role-icon">🐛</span>
+                            <span>에러 추적 구현</span>
+                        </div>
+                        <p class="role-desc">예외 처리와 에러 정보를 텔레메트리에 포함시킵니다.</p>
+                    </div>
+                </div>
             </div>
-
-            <div class="role-card ops-card">
-                <div class="role-title">
-                    <div class="role-icon ops-icon">⚙️</div>
-                    <h2>운영팀 (Ops)</h2>
+            
+            <div class="connector">
+                <div class="connector-line"></div>
+                <span class="connector-icon">🔄</span>
+            </div>
+            
+            <div class="team-section ops-section">
+                <div class="team-header">
+                    <span class="team-icon">🔧</span>
+                    <h2 class="team-title">Ops Team</h2>
                 </div>
-                <p class="role-description">인프라 레벨에서 자동 계측을 구성하는 운영 중심 접근</p>
-                <ul class="features">
-                    <li><strong>자동 계측</strong>: 코드 변경 없이 관측성 추가</li>
-                    <li><strong>에이전트/사이드카</strong>: 별도 프로세스로 데이터 수집</li>
-                    <li><strong>인프라 모니터링</strong>: 시스템 메트릭, 로그 수집</li>
-                    <li><strong>중앙 집중식 관리</strong>: 여러 서비스 통합 관리</li>
-                    <li><strong>운영 단계 배포</strong>: 기존 시스템에 비침투적 적용</li>
-                </ul>
+                
+                <div class="role-list">
+                    <div class="role-item">
+                        <div class="role-title">
+                            <span class="role-icon">📡</span>
+                            <span>Collector 배포/관리</span>
+                        </div>
+                        <p class="role-desc">OpenTelemetry Collector를 설치하고 파이프라인을 구성합니다.</p>
+                    </div>
+                    
+                    <div class="role-item">
+                        <div class="role-title">
+                            <span class="role-icon">💾</span>
+                            <span>백엔드 시스템 구축</span>
+                        </div>
+                        <p class="role-desc">Prometheus, Jaeger, Elasticsearch 등의 저장소를 관리합니다.</p>
+                    </div>
+                    
+                    <div class="role-item">
+                        <div class="role-title">
+                            <span class="role-icon">📈</span>
+                            <span>대시보드 구성</span>
+                        </div>
+                        <p class="role-desc">Grafana 등을 사용해 모니터링 대시보드를 만들고 관리합니다.</p>
+                    </div>
+                    
+                    <div class="role-item">
+                        <div class="role-title">
+                            <span class="role-icon">🚨</span>
+                            <span>알람 규칙 설정</span>
+                        </div>
+                        <p class="role-desc">임계값 기반 알람과 이상 탐지 규칙을 구성합니다.</p>
+                    </div>
+                    
+                    <div class="role-item">
+                        <div class="role-title">
+                            <span class="role-icon">⚡</span>
+                            <span>성능 최적화</span>
+                        </div>
+                        <p class="role-desc">샘플링 전략과 데이터 필터링으로 비용과 성능을 최적화합니다.</p>
+                    </div>
+                </div>
             </div>
         </div>
-
+        
+        <div class="tools-section">
+            <h3 class="tools-title">🛠️ 주요 도구들</h3>
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <span class="tool-emoji">📚</span>
+                    <div class="tool-name">OTel SDK</div>
+                    <div class="tool-type">Dev 도구</div>
+                </div>
+                <div class="tool-card">
+                    <span class="tool-emoji">📡</span>
+                    <div class="tool-name">OTel Collector</div>
+                    <div class="tool-type">Ops 도구</div>
+                </div>
+                <div class="tool-card">
+                    <span class="tool-emoji">🔧</span>
+                    <div class="tool-name">OpenTelemetry Operator</div>
+                    <div class="tool-type">K8s 관리</div>
+                </div>
+                <div class="tool-card">
+                    <span class="tool-emoji">📊</span>
+                    <div class="tool-name">Prometheus</div>
+                    <div class="tool-type">메트릭 저장소</div>
+                </div>
+                <div class="tool-card">
+                    <span class="tool-emoji">🔍</span>
+                    <div class="tool-name">Jaeger</div>
+                    <div class="tool-type">트레이스 저장소</div>
+                </div>
+                <div class="tool-card">
+                    <span class="tool-emoji">📝</span>
+                    <div class="tool-name">Elasticsearch</div>
+                    <div class="tool-type">로그 저장소</div>
+                </div>
+                <div class="tool-card">
+                    <span class="tool-emoji">📈</span>
+                    <div class="tool-name">Grafana</div>
+                    <div class="tool-type">시각화 도구</div>
+                </div>
+                <div class="tool-card">
+                    <span class="tool-emoji">🌐</span>
+                    <div class="tool-name">Zipkin</div>
+                    <div class="tool-type">트레이스 저장소</div>
+                </div>
+                <div class="tool-card">
+                    <span class="tool-emoji">🔔</span>
+                    <div class="tool-name">AlertManager</div>
+                    <div class="tool-type">알림 관리</div>
+                </div>
+            </div>
+        </div>
+        
         <div class="workflow-section">
-            <h2>일반적인 워크플로우</h2>
-            <div class="workflow-diagram">
-                <div class="workflow-step dev">
-                    <h3>1. Dev 단계</h3>
-                    <p>개발자가 코드에<br>계측 추가</p>
-                    <div class="arrow">→</div>
+            <h3 class="workflow-title">🔄 일반적인 워크플로우</h3>
+            <div class="workflow-timeline">
+                <div class="workflow-item">
+                    <div class="workflow-number">1</div>
+                    <div class="workflow-content">
+                        <div class="workflow-actor">👨‍💻 Dev</div>
+                        <div class="workflow-action">애플리케이션에 OTel SDK 통합</div>
+                        <div class="workflow-detail">자동 계측 라이브러리 설치 및 초기화 코드 작성</div>
+                    </div>
                 </div>
-                <div class="workflow-step">
-                    <h3>2. 빌드/배포</h3>
-                    <p>계측된 애플리케이션<br>배포</p>
-                    <div class="arrow">→</div>
+                
+                <div class="workflow-item">
+                    <div class="workflow-number">2</div>
+                    <div class="workflow-content">
+                        <div class="workflow-actor">👨‍💻 Dev</div>
+                        <div class="workflow-action">커스텀 스팬과 메트릭 추가</div>
+                        <div class="workflow-detail">중요한 비즈니스 로직에 대한 상세 계측 구현</div>
+                    </div>
                 </div>
-                <div class="workflow-step ops">
-                    <h3>3. Ops 단계</h3>
-                    <p>컬렉터 구성 및<br>데이터 라우팅</p>
-                    <div class="arrow">→</div>
+                
+                <div class="workflow-item">
+                    <div class="workflow-number">3</div>
+                    <div class="workflow-content">
+                        <div class="workflow-actor">🔧 Ops</div>
+                        <div class="workflow-action">Collector 인프라 구축</div>
+                        <div class="workflow-detail">데이터 수집, 처리, 라우팅을 위한 파이프라인 설정</div>
+                    </div>
                 </div>
-                <div class="workflow-step">
-                    <h3>4. 관측성 플랫폼</h3>
-                    <p>데이터 시각화 및<br>분석</p>
+                
+                <div class="workflow-item">
+                    <div class="workflow-number">4</div>
+                    <div class="workflow-content">
+                        <div class="workflow-actor">🔧 Ops</div>
+                        <div class="workflow-action">백엔드 저장소 연결</div>
+                        <div class="workflow-detail">메트릭, 트레이스, 로그를 각각의 백엔드로 전송</div>
+                    </div>
+                </div>
+                
+                <div class="workflow-item">
+                    <div class="workflow-number">5</div>
+                    <div class="workflow-content">
+                        <div class="workflow-actor">🤝 Dev + Ops</div>
+                        <div class="workflow-action">대시보드 구성 협업</div>
+                        <div class="workflow-detail">비즈니스 메트릭과 인프라 메트릭을 함께 시각화</div>
+                    </div>
+                </div>
+                
+                <div class="workflow-item">
+                    <div class="workflow-number">6</div>
+                    <div class="workflow-content">
+                        <div class="workflow-actor">🔧 Ops</div>
+                        <div class="workflow-action">알람 및 자동화 설정</div>
+                        <div class="workflow-detail">임계값 기반 알람과 자동 스케일링 규칙 구성</div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="key-differences">
-            <h2>주요 차이점</h2>
-
-            <div class="difference-item">
-                <div>
-                    <div class="difference-label">접근 시점</div>
-                    <p><strong>Dev:</strong> 개발 단계에서 계획적으로 추가</p>
+        
+        <div class="collaboration-zone">
+            <h3 class="collaboration-title">🤝 협업 포인트</h3>
+            <div class="collaboration-items">
+                <div class="collaboration-card">
+                    <div class="collaboration-icon">📋</div>
+                    <div class="collaboration-subtitle">계측 표준 정의</div>
+                    <p class="collaboration-desc">팀 간 일관된 네이밍 규칙과 태그 체계를 함께 만듭니다.</p>
                 </div>
-                <div>
-                    <div class="difference-label">접근 시점</div>
-                    <p><strong>Ops:</strong> 운영 중인 시스템에 사후 적용 가능</p>
+                
+                <div class="collaboration-card">
+                    <div class="collaboration-icon">🎯</div>
+                    <div class="collaboration-subtitle">SLI/SLO 설정</div>
+                    <p class="collaboration-desc">서비스 레벨 지표와 목표를 공동으로 정의하고 추적합니다.</p>
                 </div>
-            </div>
-
-            <div class="difference-item">
-                <div>
-                    <div class="difference-label">구현 방식</div>
-                    <p><strong>Dev:</strong> SDK/라이브러리를 통한 명시적 계측</p>
+                
+                <div class="collaboration-card">
+                    <div class="collaboration-icon">💡</div>
+                    <div class="collaboration-subtitle">문제 해결</div>
+                    <p class="collaboration-desc">프로덕션 이슈 발생 시 텔레메트리 데이터로 함께 분석합니다.</p>
                 </div>
-                <div>
-                    <div class="difference-label">구현 방식</div>
-                    <p><strong>Ops:</strong> 자동 계측 에이전트, 프록시 활용</p>
-                </div>
-            </div>
-
-            <div class="difference-item">
-                <div>
-                    <div class="difference-label">장점</div>
-                    <p><strong>Dev:</strong> 정밀한 추적, 비즈니스 컨텍스트 포함</p>
-                </div>
-                <div>
-                    <div class="difference-label">장점</div>
-                    <p><strong>Ops:</strong> 빠른 적용, 코드 변경 불필요</p>
-                </div>
-            </div>
-
-            <div class="difference-item">
-                <div>
-                    <div class="difference-label">적합한 상황</div>
-                    <p><strong>Dev:</strong> 새 프로젝트, 특정 기능 상세 모니터링</p>
-                </div>
-                <div>
-                    <div class="difference-label">적합한 상황</div>
-                    <p><strong>Ops:</strong> 레거시 시스템, 전체 인프라 모니터링</p>
+                
+                <div class="collaboration-card">
+                    <div class="collaboration-icon">📚</div>
+                    <div class="collaboration-subtitle">지식 공유</div>
+                    <p class="collaboration-desc">새로운 기능과 모범 사례를 정기적으로 공유합니다.</p>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        // 별 배경 생성
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 4 + 's';
+            starsContainer.appendChild(star);
+        }
+
+        // 카드 인터랙션
+        const cards = document.querySelectorAll('.role-item, .tool-card, .collaboration-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = this.style.transform || '';
+                const audio = new Audio();
+                audio.volume = 0.1;
+            });
+        });
+
+        // 스크롤 애니메이션
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // 워크플로우 아이템 관찰
+        document.querySelectorAll('.workflow-item').forEach(item => {
+            observer.observe(item);
+        });
+
+        // 팀 섹션 호버 효과
+        const teamSections = document.querySelectorAll('.team-section');
+        teamSections.forEach(section => {
+            section.addEventListener('mouseenter', function() {
+                const otherSection = section.classList.contains('dev-section')
+                    ? document.querySelector('.ops-section')
+                    : document.querySelector('.dev-section');
+                otherSection.style.opacity = '0.7';
+            });
+            
+            section.addEventListener('mouseleave', function() {
+                teamSections.forEach(s => s.style.opacity = '1');
+            });
+        });
+
+        // Connector 애니메이션
+        const connector = document.querySelector('.connector-icon');
+        setInterval(() => {
+            connector.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                connector.style.transform = 'scale(1)';
+            }, 500);
+        }, 3000);
+    </script>
+
+    <!-- 저작권 정보 -->
+    <footer style="background: #0f0f23; color: #e6e6e6; text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="margin: 0; font-size: 14px; opacity: 0.7;">
+            © 2024 Created by <a href="https://github.com/ej31" target="_blank" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea;">@ej31</a>
+        </p>
+    </footer>
 </body>
 </html>
