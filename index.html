@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenTelemetry 가이드 모음</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 헤더 섹션 -->
+    <header class="gradient-bg text-white py-20">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-5xl font-bold mb-4 animate-float">OpenTelemetry 학습 가이드</h1>
+            <p class="text-xl opacity-90">분산 시스템 관측 가능성을 위한 완벽한 가이드</p>
+        </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="container mx-auto px-6 py-12">
+        <!-- 소개 섹션 -->
+        <section class="mb-16 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">OpenTelemetry를 배우는 여정</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                이 가이드 모음은 OpenTelemetry의 기초부터 실전 활용까지 단계별로 학습할 수 있도록 구성되었습니다. 
+                각 가이드는 특정 주제에 집중하여 깊이 있는 이해를 돕습니다.
+            </p>
+        </section>
+
+        <!-- 가이드 카드 그리드 -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <!-- 초보자 가이드 -->
+            <div class="bg-white rounded-lg shadow-lg card-hover">
+                <div class="p-8">
+                    <div class="text-4xl mb-4">🎯</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">초보자를 위한 OpenTelemetry</h3>
+                    <p class="text-gray-600 mb-6">
+                        OpenTelemetry가 무엇인지, 왜 필요한지 쉽게 설명합니다.
+                    </p>
+                    <a href="0-what-is-opentelemetry-for-rookie.html" 
+                       class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        가이드 보기
+                    </a>
+                </div>
+            </div>
+
+            <!-- Observability 기초 -->
+            <div class="bg-white rounded-lg shadow-lg card-hover">
+                <div class="p-8">
+                    <div class="text-4xl mb-4">🔍</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">Observability란?</h3>
+                    <p class="text-gray-600 mb-6">
+                        관측 가능성의 개념과 중요성을 이해합니다.
+                    </p>
+                    <a href="1-about-observarbility.html" 
+                       class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        가이드 보기
+                    </a>
+                </div>
+            </div>
+
+            <!-- OpenTelemetry와 Observability -->
+            <div class="bg-white rounded-lg shadow-lg card-hover">
+                <div class="p-8">
+                    <div class="text-4xl mb-4">🌐</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">OpenTelemetry로 구현하는 Observability</h3>
+                    <p class="text-gray-600 mb-6">
+                        OpenTelemetry를 통한 관측 가능성 구현 방법을 배웁니다.
+                    </p>
+                    <a href="2-about-otel-observability.html" 
+                       class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        가이드 보기
+                    </a>
+                </div>
+            </div>
+
+            <!-- 왜 필요한가 -->
+            <div class="bg-white rounded-lg shadow-lg card-hover">
+                <div class="p-8">
+                    <div class="text-4xl mb-4">💡</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">왜 OpenTelemetry가 필요한가?</h3>
+                    <p class="text-gray-600 mb-6">
+                        현대 시스템에서 OpenTelemetry의 필요성을 설명합니다.
+                    </p>
+                    <a href="3-why-need-it.html" 
+                       class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        가이드 보기
+                    </a>
+                </div>
+            </div>
+
+            <!-- APM 소개 -->
+            <div class="bg-white rounded-lg shadow-lg card-hover">
+                <div class="p-8">
+                    <div class="text-4xl mb-4">📊</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">APM이란?</h3>
+                    <p class="text-gray-600 mb-6">
+                        Application Performance Monitoring의 개념과 활용법을 배웁니다.
+                    </p>
+                    <a href="about-apm.html" 
+                       class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        가이드 보기
+                    </a>
+                </div>
+            </div>
+
+            <!-- Signals 이해하기 -->
+            <div class="bg-white rounded-lg shadow-lg card-hover">
+                <div class="p-8">
+                    <div class="text-4xl mb-4">📡</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">OpenTelemetry Signals</h3>
+                    <p class="text-gray-600 mb-6">
+                        Traces, Metrics, Logs의 3가지 시그널을 깊이 이해합니다.
+                    </p>
+                    <a href="about-signals.html" 
+                       class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        가이드 보기
+                    </a>
+                </div>
+            </div>
+
+            <!-- APM vs Observability -->
+            <div class="bg-white rounded-lg shadow-lg card-hover">
+                <div class="p-8">
+                    <div class="text-4xl mb-4">⚖️</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">APM vs Observability</h3>
+                    <p class="text-gray-600 mb-6">
+                        전통적인 APM과 현대적인 Observability의 차이점을 비교합니다.
+                    </p>
+                    <a href="apm-vs-observability.html" 
+                       class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        가이드 보기
+                    </a>
+                </div>
+            </div>
+
+            <!-- OpenTelemetry 등장 배경 -->
+            <div class="bg-white rounded-lg shadow-lg card-hover">
+                <div class="p-8">
+                    <div class="text-4xl mb-4">🚀</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">OpenTelemetry의 등장</h3>
+                    <p class="text-gray-600 mb-6">
+                        OpenTelemetry가 등장하게 된 역사적 배경과 발전 과정을 알아봅니다.
+                    </p>
+                    <a href="appearance-opentelemetry.html" 
+                       class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        가이드 보기
+                    </a>
+                </div>
+            </div>
+
+            <!-- APM과 Observability 비교 -->
+            <div class="bg-white rounded-lg shadow-lg card-hover">
+                <div class="p-8">
+                    <div class="text-4xl mb-4">🔄</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">APM과 Observability 심화 비교</h3>
+                    <p class="text-gray-600 mb-6">
+                        두 접근 방식의 심층적인 비교와 실무 적용 방법을 다룹니다.
+                    </p>
+                    <a href="comparison-apm-observability.html" 
+                       class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        가이드 보기
+                    </a>
+                </div>
+            </div>
+
+            <!-- 완벽 가이드 -->
+            <div class="bg-white rounded-lg shadow-lg card-hover">
+                <div class="p-8">
+                    <div class="text-4xl mb-4">📚</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">OpenTelemetry 완벽 가이드</h3>
+                    <p class="text-gray-600 mb-6">
+                        구성요소와 사용법을 포함한 종합적인 가이드입니다.
+                    </p>
+                    <a href="opentelemetry-guide.html" 
+                       class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        가이드 보기
+                    </a>
+                </div>
+            </div>
+
+            <!-- Dev vs Ops 설정 -->
+            <div class="bg-white rounded-lg shadow-lg card-hover">
+                <div class="p-8">
+                    <div class="text-4xl mb-4">⚙️</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">개발자 vs 운영자 설정 가이드</h3>
+                    <p class="text-gray-600 mb-6">
+                        역할별 OpenTelemetry 설정 방법과 모범 사례를 제공합니다.
+                    </p>
+                    <a href="otel-setup-dev-vs-ops.html" 
+                       class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        가이드 보기
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 학습 순서 제안 -->
+        <section class="bg-white rounded-lg shadow-lg p-8 mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">추천 학습 순서</h2>
+            <div class="max-w-4xl mx-auto">
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-4">
+                        <span class="bg-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold">1</span>
+                        <span class="text-lg">초보자를 위한 OpenTelemetry → Observability란?</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="bg-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold">2</span>
+                        <span class="text-lg">왜 OpenTelemetry가 필요한가? → APM이란?</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="bg-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold">3</span>
+                        <span class="text-lg">APM vs Observability → OpenTelemetry Signals</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="bg-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold">4</span>
+                        <span class="text-lg">OpenTelemetry 완벽 가이드 → 개발자 vs 운영자 설정</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- OpenTelemetry Demo 섹션 -->
+        <section class="bg-gray-100 rounded-lg p-8 mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">OpenTelemetry Demo</h2>
+            <p class="text-lg text-gray-600 text-center mb-8">
+                이 프로젝트에는 OpenTelemetry의 공식 데모 애플리케이션이 포함되어 있습니다.
+            </p>
+            <div class="text-center">
+                <p class="text-gray-700 mb-4">
+                    <code class="bg-gray-200 px-3 py-1 rounded">opentelemetry-demo/</code> 디렉토리에서 
+                    실제 동작하는 마이크로서비스 예제를 확인할 수 있습니다.
+                </p>
+                <a href="https://github.com/open-telemetry/opentelemetry-demo" 
+                   target="_blank"
+                   class="inline-block bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition">
+                    GitHub에서 보기 →
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="gradient-bg text-white py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p class="mb-2">OpenTelemetry 학습 가이드 모음</p>
+            <p class="text-sm opacity-75">분산 시스템의 관측 가능성을 위한 표준 프레임워크를 배워보세요</p>
+        </div>
+    </footer>
+
+    <script>
+        $(document).ready(function() {
+            // 카드 애니메이션
+            $('.card-hover').each(function(index) {
+                $(this).css('opacity', '0');
+                $(this).delay(index * 100).animate({
+                    opacity: 1
+                }, 500);
+            });
+
+            // 스크롤 시 헤더 효과
+            $(window).scroll(function() {
+                if ($(window).scrollTop() > 100) {
+                    $('header').addClass('shadow-lg');
+                } else {
+                    $('header').removeClass('shadow-lg');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
