@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenTelemetry 관찰가능성 개념</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            animation: fadeInDown 0.8s ease;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            animation: fadeInUp 0.8s ease;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            animation: slideIn 0.6s ease;
+        }
+        
+        h2 {
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .icon {
+            font-size: 1.5em;
+        }
+        
+        .concept-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .concept-box::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .trace-diagram {
+            background: #f0f4f8;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .span-box {
+            background: #4a90e2;
+            color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .span-box:hover {
+            background: #357abd;
+            transform: translateX(10px);
+        }
+        
+        .child-span {
+            margin-left: 40px;
+            background: #7cb342;
+        }
+        
+        .grandchild-span {
+            margin-left: 80px;
+            background: #fb8c00;
+        }
+        
+        .arrow {
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        
+        .flow-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .flow-item {
+            background: #e3f2fd;
+            padding: 20px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            color: #1976d2;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+        
+        .flow-arrow {
+            font-size: 2em;
+            color: #1976d2;
+        }
+        
+        .attribute-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .attribute-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .attribute-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .attribute-table tr:nth-child(even) {
+            background: #f5f5f5;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 5px;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .emoji {
+            font-size: 1.5em;
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 OpenTelemetry 관찰가능성</h1>
+            <p class="subtitle">시스템을 이해하고 문제를 해결하는 현대적 접근 방법</p>
+        </header>
+
+        <div class="section">
+            <h2><span class="icon">🎯</span> 관찰가능성(Observability)이란?</h2>
+            <div class="concept-box">
+                <h3>핵심 개념</h3>
+                <p>관찰가능성은 시스템의 내부 동작을 몰라도 외부에서 시스템을 이해할 수 있게 해주는 능력입니다.</p>
+                <br>
+                <p><strong>주요 특징:</strong></p>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li>✅ 시스템에 대한 질문을 할 수 있음</li>
+                    <li>✅ 새로운 문제("unknown unknowns")를 쉽게 해결</li>
+                    <li>✅ "왜 이런 일이 발생하는가?"에 대한 답을 제공</li>
+                </ul>
+            </div>
+            
+            <div class="flow-diagram">
+                <div class="flow-item">애플리케이션 계측</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-item">신호 발생<br>(Traces, Metrics, Logs)</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-item">시스템 이해</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">📊</span> 신뢰성과 메트릭</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>🎯 신뢰성(Reliability)</h3>
+                    <p>"서비스가 사용자의 기대대로 작동하고 있는가?"</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                        예: 시스템이 100% 가동 중이어도, "장바구니 추가" 버튼이 항상 올바르게 작동하지 않으면 신뢰할 수 없습니다.
+                    </p>
+                </div>
+                
+                <div class="metric-card">
+                    <h3>📈 메트릭(Metrics)</h3>
+                    <p>시간에 따른 숫자 데이터의 집계</p>
+                    <ul style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                        <li>시스템 오류율</li>
+                        <li>CPU 사용률</li>
+                        <li>서비스 요청 속도</li>
+                    </ul>
+                </div>
+                
+                <div class="metric-card">
+                    <h3>📍 SLI</h3>
+                    <p>Service Level Indicator</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                        서비스 동작의 측정값<br>
+                        예: 웹 페이지 로딩 속도
+                    </p>
+                </div>
+                
+                <div class="metric-card">
+                    <h3>🎯 SLO</h3>
+                    <p>Service Level Objective</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                        신뢰성을 조직에 전달하는 수단<br>
+                        SLI를 비즈니스 가치에 연결
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">🔄</span> 분산 추적 이해하기</h2>
+            
+            <p>분산 추적은 복잡한 분산 시스템을 통해 전파되는 요청을 관찰할 수 있게 해줍니다.</p>
+            
+            <div class="trace-diagram">
+                <h3 style="margin-bottom: 20px;">추적의 구성 요소</h3>
+                
+                <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+                    <h4>📝 로그(Logs)</h4>
+                    <p>타임스탬프가 있는 메시지</p>
+                    <code style="background: #f5f5f5; padding: 10px; display: block; margin-top: 10px; border-radius: 5px;">
+                        I, [2021-02-23T13:26:23.505892 #22473] INFO -- : [6459ffe1-ea53-4044-aaa3-bf902868f730] Started GET "/" for ::1
+                    </code>
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+                    <h4>🔲 스팬(Spans)</h4>
+                    <p>작업 또는 연산의 단위</p>
+                    <ul>
+                        <li>이름</li>
+                        <li>시간 관련 데이터</li>
+                        <li>구조화된 로그 메시지</li>
+                        <li>메타데이터(속성)</li>
+                    </ul>
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 10px;">
+                    <h4>🌐 분산 추적(Distributed Traces)</h4>
+                    <p>하나 이상의 스팬으로 구성된 요청의 전체 경로</p>
+                </div>
+            </div>
+            
+            <h3 style="margin: 30px 0 20px 0;">추적 시각화 (Waterfall Diagram)</h3>
+            <div class="trace-diagram">
+                <div class="span-box">
+                    <strong>루트 스팬</strong> - 전체 요청 (450ms)
+                </div>
+                <div class="span-box child-span">
+                    <span class="arrow">└</span>
+                    <strong>API 호출</strong> - 사용자 인증 (120ms)
+                </div>
+                <div class="span-box child-span">
+                    <span class="arrow">└</span>
+                    <strong>데이터베이스 쿼리</strong> - 사용자 정보 조회 (180ms)
+                </div>
+                <div class="span-box grandchild-span">
+                    <span class="arrow">└</span>
+                    <strong>캐시 확인</strong> (20ms)
+                </div>
+                <div class="span-box grandchild-span">
+                    <span class="arrow">└</span>
+                    <strong>DB 연결</strong> (160ms)
+                </div>
+                <div class="span-box child-span">
+                    <span class="arrow">└</span>
+                    <strong>응답 생성</strong> (50ms)
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">🏷️</span> 스팬 속성 예시</h2>
+            <table class="attribute-table">
+                <thead>
+                    <tr>
+                        <th>키(Key)</th>
+                        <th>값(Value)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>http.request.method</td>
+                        <td>"GET"</td>
+                    </tr>
+                    <tr>
+                        <td>network.protocol.version</td>
+                        <td>"1.1"</td>
+                    </tr>
+                    <tr>
+                        <td>url.path</td>
+                        <td>"/webshop/articles/4"</td>
+                    </tr>
+                    <tr>
+                        <td>server.address</td>
+                        <td>"example.com"</td>
+                    </tr>
+                    <tr>
+                        <td>http.response.status_code</td>
+                        <td>200</td>
+                    </tr>
+                    <tr>
+                        <td>client.address</td>
+                        <td>"192.0.2.4"</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">💡</span> 왜 관찰가능성이 중요한가?</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px;">
+                <span class="highlight">🔍 문제 근본 원인 파악</span>
+                <span class="highlight">⚡ 성능 문제 디버깅</span>
+                <span class="highlight">🎯 시스템 동작 이해</span>
+                <span class="highlight">📊 데이터 기반 의사결정</span>
+                <span class="highlight">🚀 신속한 문제 해결</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

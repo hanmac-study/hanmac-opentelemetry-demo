@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관측 가능성(Observability)과 OpenTelemetry 시각화</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .pillars {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .pillar {
+            background: linear-gradient(145deg, #f5f5f5, #ffffff);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .pillar:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            border-color: #2a5298;
+        }
+        
+        .pillar-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            border-radius: 50%;
+        }
+        
+        .metrics-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .logs-icon {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .traces-icon {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .pillar h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #2a5298;
+        }
+        
+        .pillar p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .examples {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .example-item {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: #555;
+            text-align: left;
+        }
+        
+        .opentelemetry-diagram {
+            margin: 40px 0;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .diagram-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .architecture-flow {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .arch-component {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .arch-component:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .arrow {
+            font-size: 30px;
+            color: #2a5298;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+        
+        .interactive-demo {
+            background: #f8f9fa;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 40px 0;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-button {
+            padding: 12px 24px;
+            background: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-button:hover {
+            background: #1e3c72;
+            transform: translateY(-2px);
+        }
+        
+        .demo-display {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            min-height: 300px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .telemetry-item {
+            background: #f1f3f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .telemetry-type {
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .metric-type {
+            background: #667eea;
+        }
+        
+        .log-type {
+            background: #f5576c;
+        }
+        
+        .trace-type {
+            background: #00f2fe;
+        }
+        
+        .telemetry-content {
+            flex: 1;
+        }
+        
+        .telemetry-timestamp {
+            color: #999;
+            font-size: 0.85em;
+        }
+        
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .benefit-card {
+            background: linear-gradient(145deg, #e6e9ef, #ffffff);
+            padding: 25px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .benefit-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .benefit-card h4 {
+            color: #2a5298;
+            margin-bottom: 10px;
+        }
+        
+        .benefit-card p {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .pillars {
+                grid-template-columns: 1fr;
+            }
+            
+            .architecture-flow {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>관측 가능성(Observability)</h1>
+            <p class="subtitle">시스템의 내부 상태를 외부 출력으로부터 이해하는 능력</p>
+        </header>
+        
+        <section class="section">
+            <h2>관측 가능성의 3가지 핵심 요소</h2>
+            <p style="text-align: center; color: #666; margin: 20px 0;">
+                현대의 분산 시스템에서 문제를 파악하고 해결하기 위한 필수 요소들
+            </p>
+            
+            <div class="pillars">
+                <div class="pillar" onclick="showPillarDetails('metrics')">
+                    <div class="pillar-icon metrics-icon">📊</div>
+                    <h3>Metrics (메트릭)</h3>
+                    <p>시스템의 성능과 상태를 숫자로 측정한 데이터</p>
+                    <div class="examples">
+                        <div class="example-item">• CPU 사용률: 75%</div>
+                        <div class="example-item">• 메모리 사용량: 4.2GB/8GB</div>
+                        <div class="example-item">• 요청 처리 시간: 250ms</div>
+                        <div class="example-item">• 초당 처리량: 1,000 req/s</div>
+                    </div>
+                </div>
+                
+                <div class="pillar" onclick="showPillarDetails('logs')">
+                    <div class="pillar-icon logs-icon">📝</div>
+                    <h3>Logs (로그)</h3>
+                    <p>시스템에서 발생한 이벤트의 시간 기반 기록</p>
+                    <div class="examples">
+                        <div class="example-item">• 에러 로그: "Database connection failed"</div>
+                        <div class="example-item">• 접속 로그: "User 123 logged in"</div>
+                        <div class="example-item">• 디버그 로그: "Payment processing started"</div>
+                        <div class="example-item">• 경고 로그: "Memory usage above 80%"</div>
+                    </div>
+                </div>
+                
+                <div class="pillar" onclick="showPillarDetails('traces')">
+                    <div class="pillar-icon traces-icon">🔍</div>
+                    <h3>Traces (추적)</h3>
+                    <p>분산 시스템에서 요청의 전체 경로를 추적</p>
+                    <div class="examples">
+                        <div class="example-item">• API Gateway → 25ms</div>
+                        <div class="example-item">• 인증 서비스 → 10ms</div>
+                        <div class="example-item">• 데이터베이스 조회 → 150ms</div>
+                        <div class="example-item">• 캐시 확인 → 5ms</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>OpenTelemetry란?</h2>
+            <p style="text-align: center; color: #666; margin: 20px 0;">
+                관측 가능성을 위한 표준화된 오픈소스 프레임워크
+            </p>
+            
+            <div class="opentelemetry-diagram">
+                <div class="diagram-container">
+                    <h3 style="color: #2a5298; margin-bottom: 30px;">OpenTelemetry 아키텍처</h3>
+                    
+                    <div class="architecture-flow">
+                        <div class="arch-component">
+                            <h4>애플리케이션</h4>
+                            <p style="color: #666;">코드에 계측 추가</p>
+                        </div>
+                        
+                        <div class="arrow">→</div>
+                        
+                        <div class="arch-component">
+                            <h4>OpenTelemetry SDK</h4>
+                            <p style="color: #666;">데이터 수집 및 처리</p>
+                        </div>
+                        
+                        <div class="arrow">→</div>
+                        
+                        <div class="arch-component">
+                            <h4>Collector</h4>
+                            <p style="color: #666;">데이터 수신, 처리, 내보내기</p>
+                        </div>
+                        
+                        <div class="arrow">→</div>
+                        
+                        <div class="arch-component">
+                            <h4>백엔드</h4>
+                            <p style="color: #666;">Jaeger, Prometheus, etc.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="benefits">
+                <div class="benefit-card">
+                    <h4>🔧 벤더 중립적</h4>
+                    <p>특정 벤더에 종속되지 않고 다양한 백엔드와 호환</p>
+                </div>
+                <div class="benefit-card">
+                    <h4>🌍 표준화</h4>
+                    <p>업계 표준으로 일관된 방식의 텔레메트리 데이터 수집</p>
+                </div>
+                <div class="benefit-card">
+                    <h4>🔄 유연성</h4>
+                    <p>다양한 언어와 프레임워크 지원</p>
+                </div>
+                <div class="benefit-card">
+                    <h4>⚡ 성능</h4>
+                    <p>최소한의 오버헤드로 프로덕션 환경에서 사용 가능</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section interactive-demo">
+            <h2>인터랙티브 데모: 실시간 관측 가능성</h2>
+            <p style="color: #666; margin-bottom: 30px;">
+                아래 버튼을 클릭하여 실제 시스템에서 어떻게 텔레메트리 데이터가 생성되는지 확인해보세요
+            </p>
+            
+            <div class="demo-controls">
+                <button class="demo-button" onclick="simulateUserRequest()">사용자 요청 시뮬레이션</button>
+                <button class="demo-button" onclick="simulateError()">에러 발생</button>
+                <button class="demo-button" onclick="simulateHighLoad()">높은 부하 상황</button>
+                <button class="demo-button" onclick="clearDemo()">초기화</button>
+            </div>
+            
+            <div class="demo-display" id="demoDisplay">
+                <p style="color: #999; text-align: center;">버튼을 클릭하여 시작하세요...</p>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        let demoData = [];
+        
+        function showPillarDetails(type) {
+            console.log(`${type} 상세 정보 표시`);
+        }
+        
+        function addTelemetryItem(type, content) {
+            const display = document.getElementById('demoDisplay');
+            const timestamp = new Date().toLocaleTimeString('ko-KR');
+            
+            const item = document.createElement('div');
+            item.className = 'telemetry-item';
+            
+            let typeClass = '';
+            let typeLabel = '';
+            
+            switch(type) {
+                case 'metric':
+                    typeClass = 'metric-type';
+                    typeLabel = 'METRIC';
+                    break;
+                case 'log':
+                    typeClass = 'log-type';
+                    typeLabel = 'LOG';
+                    break;
+                case 'trace':
+                    typeClass = 'trace-type';
+                    typeLabel = 'TRACE';
+                    break;
+            }
+            
+            item.innerHTML = `
+                <span class="telemetry-type ${typeClass}">${typeLabel}</span>
+                <div class="telemetry-content">
+                    <div>${content}</div>
+                    <div class="telemetry-timestamp">${timestamp}</div>
+                </div>
+            `;
+            
+            if (display.children.length === 1 && display.children[0].textContent.includes('버튼을 클릭')) {
+                display.innerHTML = '';
+            }
+            
+            display.insertBefore(item, display.firstChild);
+            
+            // 최대 10개 항목만 유지
+            if (display.children.length > 10) {
+                display.removeChild(display.lastChild);
+            }
+        }
+        
+        function simulateUserRequest() {
+            // Trace 시작
+            addTelemetryItem('trace', 'Trace ID: ' + generateTraceId() + ' - 요청 시작');
+            
+            // 로그
+            setTimeout(() => {
+                addTelemetryItem('log', '[INFO] GET /api/products - 상품 목록 요청 수신');
+            }, 100);
+            
+            // 메트릭
+            setTimeout(() => {
+                addTelemetryItem('metric', 'http_request_duration: 125ms | http_requests_total: +1');
+            }, 200);
+            
+            // 추가 추적
+            setTimeout(() => {
+                addTelemetryItem('trace', 'Span: database_query - 45ms (SELECT * FROM products)');
+            }, 300);
+            
+            setTimeout(() => {
+                addTelemetryItem('trace', 'Span: cache_lookup - 5ms (HIT)');
+            }, 400);
+            
+            // 완료 로그
+            setTimeout(() => {
+                addTelemetryItem('log', '[INFO] 요청 처리 완료 - 200 OK');
+            }, 500);
+        }
+        
+        function simulateError() {
+            const errorId = Math.random().toString(36).substr(2, 9);
+            
+            addTelemetryItem('log', '[ERROR] 데이터베이스 연결 실패 - Error ID: ' + errorId);
+            
+            setTimeout(() => {
+                addTelemetryItem('metric', 'error_rate: 0.05 | database_connections_failed: +1');
+            }, 100);
+            
+            setTimeout(() => {
+                addTelemetryItem('trace', 'Trace ID: ' + generateTraceId() + ' - 예외 발생: ConnectionTimeoutException');
+            }, 200);
+            
+            setTimeout(() => {
+                addTelemetryItem('log', '[WARN] 재시도 시도 중... (1/3)');
+            }, 300);
+        }
+        
+        function simulateHighLoad() {
+            addTelemetryItem('metric', 'cpu_usage: 89% | memory_usage: 7.2GB/8GB');
+            
+            setTimeout(() => {
+                addTelemetryItem('log', '[WARN] 높은 CPU 사용률 감지 - 자동 스케일링 시작');
+            }, 100);
+            
+            setTimeout(() => {
+                addTelemetryItem('metric', 'active_connections: 4,523 | queue_depth: 1,234');
+            }, 200);
+            
+            setTimeout(() => {
+                addTelemetryItem('trace', 'Trace ID: ' + generateTraceId() + ' - 응답 시간 증가: 2,340ms');
+            }, 300);
+            
+            setTimeout(() => {
+                addTelemetryItem('log', '[INFO] 새 인스턴스 추가됨 - 부하 분산 시작');
+            }, 400);
+        }
+        
+        function clearDemo() {
+            const display = document.getElementById('demoDisplay');
+            display.innerHTML = '<p style="color: #999; text-align: center;">버튼을 클릭하여 시작하세요...</p>';
+        }
+        
+        function generateTraceId() {
+            return Math.random().toString(16).substr(2, 16);
+        }
+        
+        // 페이지 로드 시 애니메이션
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.section').forEach((section, index) => {
+                section.style.animationDelay = `${index * 0.2}s`;
+            });
+        });
+    </script>
+</body>
+</html>

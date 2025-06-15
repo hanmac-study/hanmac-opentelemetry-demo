@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenTelemetry Signals 통합 가이드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e27;
+            color: #e0e6ed;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* 헤더 스타일 */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+            background-size: cover;
+        }
+        
+        .hero h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            z-index: 1;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .hero p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            z-index: 1;
+            position: relative;
+        }
+        
+        /* 컨테이너 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* 신호 개요 섹션 */
+        .signals-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .signal-card {
+            background: #1a1f3a;
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .signal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--signal-color) 0%, transparent 100%);
+        }
+        
+        .signal-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--signal-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .signal-card.traces { --signal-color: #00d4ff; }
+        .signal-card.metrics { --signal-color: #00ff88; }
+        .signal-card.logs { --signal-color: #ffaa00; }
+        .signal-card.baggage { --signal-color: #ff00ff; }
+        
+        .signal-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .signal-card h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: var(--signal-color);
+        }
+        
+        /* 상세 섹션 */
+        .detail-section {
+            background: #1a1f3a;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .section-icon {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, var(--section-color) 0%, var(--section-color-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .detail-section.traces-detail { --section-color: #00d4ff; --section-color-dark: #0099cc; }
+        .detail-section.metrics-detail { --section-color: #00ff88; --section-color-dark: #00cc66; }
+        .detail-section.logs-detail { --section-color: #ffaa00; --section-color-dark: #cc8800; }
+        .detail-section.baggage-detail { --section-color: #ff00ff; --section-color-dark: #cc00cc; }
+        
+        /* 추적 시각화 */
+        .trace-visualization {
+            background: #0f1426;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        
+        .span-item {
+            background: #2a3050;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .span-item:hover {
+            background: #353a5f;
+            transform: translateX(10px);
+        }
+        
+        .span-item.child {
+            margin-left: 40px;
+        }
+        
+        .span-item.grandchild {
+            margin-left: 80px;
+        }
+        
+        .span-duration {
+            background: rgba(0, 212, 255, 0.2);
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            border-radius: 10px;
+            z-index: 0;
+        }
+        
+        .span-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        /* 메트릭 타입 그리드 */
+        .metric-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .metric-type {
+            background: #0f1426;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 4px solid var(--metric-color);
+            transition: all 0.3s ease;
+        }
+        
+        .metric-type:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .metric-type.counter { --metric-color: #3498db; }
+        .metric-type.gauge { --metric-color: #e74c3c; }
+        .metric-type.histogram { --metric-color: #f39c12; }
+        .metric-type.updown { --metric-color: #9b59b6; }
+        
+        /* 로그 포맷 예시 */
+        .log-example {
+            background: #0f1426;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        
+        .log-structured {
+            color: #00ff88;
+        }
+        
+        .log-unstructured {
+            color: #ffaa00;
+        }
+        
+        /* Baggage 플로우 */
+        .baggage-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .flow-node {
+            background: #2a3050;
+            padding: 20px 30px;
+            border-radius: 50px;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+        
+        .flow-arrow {
+            font-size: 2em;
+            color: #667eea;
+            animation: slide 1.5s infinite;
+        }
+        
+        /* 컴포넌트 다이어그램 */
+        .component-diagram {
+            background: #0f1426;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .component-box {
+            display: inline-block;
+            background: #2a3050;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .component-box:hover {
+            background: #353a5f;
+            transform: scale(1.1);
+        }
+        
+        /* 테이블 스타일 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #0f1426;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .data-table th {
+            background: #2a3050;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #1a1f3a;
+        }
+        
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* 탭 네비게이션 */
+        .tab-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-button {
+            background: #2a3050;
+            border: none;
+            color: #e0e6ed;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+        
+        .tab-button:hover {
+            background: #353a5f;
+        }
+        
+        .tab-button.active {
+            background: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        /* 특별 강조 박스 */
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .highlight-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+        
+        /* 애니메이션 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+        }
+        
+        @keyframes slide {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5em; }
+            .signal-card { padding: 20px; }
+            .detail-section { padding: 25px; }
+            .span-item.child { margin-left: 20px; }
+            .span-item.grandchild { margin-left: 40px; }
+        }
+        
+        /* 추가 유틸리티 클래스 */
+        .text-center { text-align: center; }
+        .mt-30 { margin-top: 30px; }
+        .mb-30 { margin-bottom: 30px; }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>🚀 OpenTelemetry Signals</h1>
+        <p>시스템의 내부 동작을 이해하기 위한 4가지 핵심 신호</p>
+    </div>
+
+    <div class="container">
+        <!-- Signals 개요 -->
+        <div class="signals-overview">
+            <div class="signal-card traces">
+                <div class="signal-icon">🔍</div>
+                <h3>Traces (추적)</h3>
+                <p>요청이 분산 시스템을 통과하는 전체 경로를 추적합니다. 마이크로서비스 환경에서 성능 문제의 근본 원인을 찾는 데 필수적입니다.</p>
+            </div>
+            
+            <div class="signal-card metrics">
+                <div class="signal-icon">📊</div>
+                <h3>Metrics (메트릭)</h3>
+                <p>런타임에 캡처된 숫자 측정값으로, 시스템의 상태와 성능을 모니터링합니다. CPU 사용률, 메모리, 요청 수 등을 추적합니다.</p>
+            </div>
+            
+            <div class="signal-card logs">
+                <div class="signal-icon">📝</div>
+                <h3>Logs (로그)</h3>
+                <p>타임스탬프가 있는 텍스트 레코드로, 시스템에서 발생하는 이벤트를 기록합니다. 기존 로깅과 자동으로 통합됩니다.</p>
+            </div>
+            
+            <div class="signal-card baggage">
+                <div class="signal-icon">🎒</div>
+                <h3>Baggage (수하물)</h3>
+                <p>서비스 간에 컨텍스트 정보를 전파하는 키-값 저장소입니다. 사용자 ID나 요청 ID 같은 정보를 전달합니다.</p>
+            </div>
+        </div>
+
+        <!-- Traces 상세 -->
+        <div class="detail-section traces-detail">
+            <div class="section-header">
+                <div class="section-icon">🔍</div>
+                <h2>Traces 심화 이해</h2>
+            </div>
+            
+            <div class="component-diagram">
+                <h3>추적 시스템 구성 요소</h3>
+                <div style="margin-top: 20px;">
+                    <div class="component-box">Tracer Provider</div>
+                    <span style="margin: 0 10px;">→</span>
+                    <div class="component-box">Tracer</div>
+                    <span style="margin: 0 10px;">→</span>
+                    <div class="component-box">Spans</div>
+                    <span style="margin: 0 10px;">→</span>
+                    <div class="component-box">Trace Exporter</div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">Span 구성 요소</h3>
+            <div class="grid-2">
+                <div>
+                    <h4>필수 정보</h4>
+                    <ul>
+                        <li>📌 이름 (Name)</li>
+                        <li>🆔 Trace ID & Span ID</li>
+                        <li>👆 부모 Span ID</li>
+                        <li>⏱️ 시작/종료 타임스탬프</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>추가 정보</h4>
+                    <ul>
+                        <li>🏷️ 속성 (Attributes)</li>
+                        <li>📍 이벤트 (Events)</li>
+                        <li>🔗 링크 (Links)</li>
+                        <li>✅ 상태 (Status)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">추적 시각화 예시</h3>
+            <div class="trace-visualization">
+                <div class="span-item">
+                    <div class="span-duration" style="width: 100%;"></div>
+                    <div class="span-content">
+                        <span><strong>🌐 프론트엔드 요청</strong></span>
+                        <span>전체: 450ms</span>
+                    </div>
+                </div>
+                <div class="span-item child">
+                    <div class="span-duration" style="width: 60%;"></div>
+                    <div class="span-content">
+                        <span><strong>🔐 인증 서비스</strong></span>
+                        <span>120ms</span>
+                    </div>
+                </div>
+                <div class="span-item child">
+                    <div class="span-duration" style="width: 80%;"></div>
+                    <div class="span-content">
+                        <span><strong>💾 데이터베이스 쿼리</strong></span>
+                        <span>180ms</span>
+                    </div>
+                </div>
+                <div class="span-item grandchild">
+                    <div class="span-duration" style="width: 20%;"></div>
+                    <div class="span-content">
+                        <span><strong>💨 캐시 조회</strong></span>
+                        <span>20ms</span>
+                    </div>
+                </div>
+                <div class="span-item child">
+                    <div class="span-duration" style="width: 40%;"></div>
+                    <div class="span-content">
+                        <span><strong>📤 응답 생성</strong></span>
+                        <span>50ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">Span 종류 (SpanKind)</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>종류</th>
+                        <th>설명</th>
+                        <th>예시</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Client</strong></td>
+                        <td>동기식 외부 요청</td>
+                        <td>HTTP 요청, DB 호출</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Server</strong></td>
+                        <td>동기식 수신 요청</td>
+                        <td>HTTP 서버, RPC 수신</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Internal</strong></td>
+                        <td>프로세스 내부 작업</td>
+                        <td>함수 호출, 미들웨어</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Producer</strong></td>
+                        <td>비동기 작업 생성</td>
+                        <td>메시지 큐에 작업 추가</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Consumer</strong></td>
+                        <td>비동기 작업 처리</td>
+                        <td>큐에서 메시지 처리</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Metrics 상세 -->
+        <div class="detail-section metrics-detail">
+            <div class="section-header">
+                <div class="section-icon">📊</div>
+                <h2>Metrics 심화 이해</h2>
+            </div>
+
+            <h3>메트릭 계측 종류</h3>
+            <div class="metric-types">
+                <div class="metric-type counter">
+                    <h4>📈 Counter</h4>
+                    <p>시간이 지나면서 누적되는 값</p>
+                    <p style="font-size: 0.9em; opacity: 0.8;">예: 총 요청 수, 에러 횟수</p>
+                </div>
+                <div class="metric-type updown">
+                    <h4>📉 UpDownCounter</h4>
+                    <p>증가하거나 감소할 수 있는 값</p>
+                    <p style="font-size: 0.9em; opacity: 0.8;">예: 큐 길이, 연결 수</p>
+                </div>
+                <div class="metric-type gauge">
+                    <h4>🌡️ Gauge</h4>
+                    <p>현재 시점의 값</p>
+                    <p style="font-size: 0.9em; opacity: 0.8;">예: CPU 사용률, 메모리</p>
+                </div>
+                <div class="metric-type histogram">
+                    <h4>📊 Histogram</h4>
+                    <p>값의 분포를 측정</p>
+                    <p style="font-size: 0.9em; opacity: 0.8;">예: 응답 시간 분포</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">메트릭 시스템 구조</h3>
+            <div class="component-diagram">
+                <div class="component-box">Meter Provider</div>
+                <span style="margin: 0 10px;">→</span>
+                <div class="component-box">Meter</div>
+                <span style="margin: 0 10px;">→</span>
+                <div class="component-box">Instruments</div>
+                <span style="margin: 0 10px;">→</span>
+                <div class="component-box">Aggregation</div>
+                <span style="margin: 0 10px;">→</span>
+                <div class="component-box">Metric Exporter</div>
+            </div>
+
+            <div class="highlight-box mt-30">
+                <h4>💡 Views를 통한 커스터마이징</h4>
+                <p>Views를 사용하면 어떤 메트릭을 처리하거나 무시할지, 어떤 집계 방식을 사용할지, 어떤 속성을 보고할지 커스터마이징할 수 있습니다.</p>
+            </div>
+        </div>
+
+        <!-- Logs 상세 -->
+        <div class="detail-section logs-detail">
+            <div class="section-header">
+                <div class="section-icon">📝</div>
+                <h2>Logs 심화 이해</h2>
+            </div>
+
+            <h3>로그 포맷 비교</h3>
+            
+            <div class="tab-nav">
+                <button class="tab-button active" onclick="showTab('structured')">구조화 로그</button>
+                <button class="tab-button" onclick="showTab('unstructured')">비구조화 로그</button>
+                <button class="tab-button" onclick="showTab('semistructured')">반구조화 로그</button>
+            </div>
+
+            <div id="structured" class="tab-content active">
+                <p>기계가 읽기 쉬운 일관된 형식 (권장)</p>
+                <div class="log-example log-structured">
+{
+  "timestamp": "2024-08-04T12:34:56.789Z",
+  "level": "INFO",
+  "service": "user-authentication",
+  "message": "User login successful",
+  "userId": "12345",
+  "traceId": "5b8aa5a2d2c872e8321cf37308d69df2",
+  "spanId": "051581bf3cb55c13"
+}
+                </div>
+            </div>
+
+            <div id="unstructured" class="tab-content">
+                <p>사람이 읽기 쉽지만 파싱이 어려움</p>
+                <div class="log-example log-unstructured">
+[ERROR] 2024-08-04 12:45:23 - Failed to connect to database.
+Exception: java.sql.SQLException: Timeout expired.
+Attempted reconnect 3 times. Server: db.example.com, Port: 5432
+                </div>
+            </div>
+
+            <div id="semistructured" class="tab-content">
+                <p>일부 구조를 가지지만 일관성이 부족할 수 있음</p>
+                <div class="log-example">
+2024-08-04T12:45:23Z level=ERROR service=user-auth userId=12345
+action=login message="Failed login attempt" error="Invalid password"
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">Log Record 필드</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>필드명</th>
+                        <th>설명</th>
+                        <th>예시</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Timestamp</td>
+                        <td>이벤트 발생 시간</td>
+                        <td>2024-01-15T10:30:45Z</td>
+                    </tr>
+                    <tr>
+                        <td>TraceId</td>
+                        <td>관련 추적 ID</td>
+                        <td>7bba9f33312b3dbb...</td>
+                    </tr>
+                    <tr>
+                        <td>SpanId</td>
+                        <td>관련 스팬 ID</td>
+                        <td>086e83747d0e381e</td>
+                    </tr>
+                    <tr>
+                        <td>SeverityText</td>
+                        <td>로그 레벨</td>
+                        <td>ERROR, WARN, INFO</td>
+                    </tr>
+                    <tr>
+                        <td>Body</td>
+                        <td>로그 메시지 본문</td>
+                        <td>User authentication failed</td>
+                    </tr>
+                    <tr>
+                        <td>Attributes</td>
+                        <td>추가 메타데이터</td>
+                        <td>{userId: "123", ip: "192.168.1.1"}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="highlight-box mt-30">
+                <h4>🔗 자동 상관관계</h4>
+                <p>OpenTelemetry는 로그를 자동으로 활성 추적 및 스팬과 연결하여, 분산 시스템에서 문제를 더 쉽게 디버깅할 수 있게 합니다.</p>
+            </div>
+        </div>
+
+        <!-- Baggage 상세 -->
+        <div class="detail-section baggage-detail">
+            <div class="section-header">
+                <div class="section-icon">🎒</div>
+                <h2>Baggage 심화 이해</h2>
+            </div>
+
+            <h3>Baggage 작동 방식</h3>
+            <div class="baggage-flow">
+                <div class="flow-node">
+                    <strong>서비스 A</strong><br>
+                    <small>userId 설정</small>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">
+                    <strong>서비스 B</strong><br>
+                    <small>userId 읽기</small>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">
+                    <strong>서비스 C</strong><br>
+                    <small>userId로 로깅</small>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">사용 사례</h3>
+            <div class="grid-2">
+                <div>
+                    <h4>✅ 좋은 사용 사례</h4>
+                    <ul>
+                        <li>계정 ID 전파</li>
+                        <li>사용자 ID 전달</li>
+                        <li>제품 ID 추적</li>
+                        <li>요청 출처 IP</li>
+                        <li>A/B 테스트 플래그</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>⚠️ 주의사항</h4>
+                    <ul>
+                        <li>민감한 정보는 피하기</li>
+                        <li>HTTP 헤더로 전송됨</li>
+                        <li>제3자 API에 노출 가능</li>
+                        <li>무결성 검사 없음</li>
+                        <li>속성과 별개로 관리됨</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="highlight-box mt-30">
+                <h4>💡 Baggage vs Attributes</h4>
+                <p>Baggage는 자동으로 전파되지만 속성(Attributes)에 자동으로 추가되지 않습니다.
+                Baggage 데이터를 스팬, 메트릭, 로그의 속성으로 사용하려면 명시적으로 읽어서 추가해야 합니다.</p>
+            </div>
+        </div>
+
+        <!-- 통합 사용 예시 -->
+        <div class="detail-section">
+            <div class="section-header">
+                <div class="section-icon">🔄</div>
+                <h2>Signals 통합 활용</h2>
+            </div>
+
+            <h3>실제 시나리오: 전자상거래 주문 처리</h3>
+            
+            <div class="trace-visualization">
+                <p style="margin-bottom: 20px;">사용자가 주문을 완료하는 과정에서 모든 신호가 어떻게 연동되는지 살펴봅시다:</p>
+                
+                <div style="background: #2a3050; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h4>1️⃣ Traces - 요청 흐름 추적</h4>
+                    <p>주문 요청이 프론트엔드 → API Gateway → 주문 서비스 → 재고 서비스 → 결제 서비스로 흐르는 과정을 추적</p>
+                </div>
+
+                <div style="background: #2a3050; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h4>2️⃣ Metrics - 성능 모니터링</h4>
+                    <p>• 주문 처리 시간 (Histogram)<br>
+                    • 동시 처리 중인 주문 수 (UpDownCounter)<br>
+                    • 총 주문 수 (Counter)<br>
+                    • 현재 재고 수준 (Gauge)</p>
+                </div>
+
+                <div style="background: #2a3050; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h4>3️⃣ Logs - 상세 이벤트 기록</h4>
+                    <p>각 서비스에서 발생하는 이벤트를 기록하며, TraceId와 SpanId로 자동 연결됨</p>
+                </div>
+
+                <div style="background: #2a3050; padding: 20px; border-radius: 10px;">
+                    <h4>4️⃣ Baggage - 컨텍스트 전파</h4>
+                    <p>userId, orderId, customerTier 같은 정보를 모든 서비스에 전파하여 각 서비스에서 활용</p>
+                </div>
+            </div>
+
+            <div class="highlight-box mt-30 text-center">
+                <h3>🎯 핵심 포인트</h3>
+                <p style="font-size: 1.1em;">OpenTelemetry의 4가지 신호를 통합적으로 사용하면<br>
+                분산 시스템의 완전한 관찰가능성을 확보할 수 있습니다!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 탭 전환 기능
+        function showTab(tabName) {
+            // 모든 탭 콘텐츠 숨기기
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 모든 탭 버튼 비활성화
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // 선택된 탭 표시
+            document.getElementById(tabName).classList.add('active');
+            
+            // 클릭된 버튼 활성화
+            event.target.classList.add('active');
+        }
+
+        // 페이지 로드 시 애니메이션
+        document.addEventListener('DOMContentLoaded', function() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // 모든 섹션에 관찰자 적용
+            const sections = document.querySelectorAll('.detail-section, .signal-card');
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(30px)';
+                section.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                observer.observe(section);
+            });
+        });
+
+        // 스팬 시각화 호버 효과
+        const spanItems = document.querySelectorAll('.span-item');
+        spanItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.background = '#353a5f';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.background = '#2a3050';
+            });
+        });
+    </script>
+</body>
+</html>

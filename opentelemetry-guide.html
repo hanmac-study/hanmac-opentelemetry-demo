@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenTelemetry 완벽 가이드: 구성요소와 사용법</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f23;
+            color: #e6e6e6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3em;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .section {
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        h2 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        h3 {
+            color: #764ba2;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .component-card {
+            background: linear-gradient(145deg, #16213e, #1a1a2e);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .component-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+        
+        .component-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .component-title {
+            font-size: 1.4em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .component-description {
+            color: #b8b8b8;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .component-features {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .component-features li {
+            padding: 8px 0;
+            color: #9ca3af;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .component-features li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+        }
+        
+        .code-example {
+            background: #0f0f23;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        .code-example pre {
+            color: #e6e6e6;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .tab-container {
+            background: #1a1a2e;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 30px 0;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #0f0f23;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            background: transparent;
+            color: #9ca3af;
+            border: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab-content {
+            padding: 30px;
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .ecosystem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .ecosystem-card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .ecosystem-card:hover {
+            transform: translateY(-3px);
+            border-color: #667eea;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+        
+        .ecosystem-card h4 {
+            color: #764ba2;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .ecosystem-card p {
+            color: #b8b8b8;
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .ecosystem-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .ecosystem-link {
+            padding: 6px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+        
+        .ecosystem-link:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .flow-diagram {
+            background: #0f0f23;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .flow-step {
+            display: inline-block;
+            background: #16213e;
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin: 10px;
+            border: 2px solid #667eea;
+            position: relative;
+        }
+        
+        .flow-arrow {
+            display: inline-block;
+            width: 40px;
+            height: 2px;
+            background: #667eea;
+            position: relative;
+            margin: 0 10px;
+        }
+        
+        .flow-arrow::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid #667eea;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+        
+        .setup-steps {
+            counter-reset: step-counter;
+            margin: 30px 0;
+        }
+        
+        .setup-step {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            position: relative;
+            padding-left: 70px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .setup-step::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .highlight {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+        
+        .interactive-demo {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .demo-button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .demo-output {
+            background: #0f0f23;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 200px;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            color: #4ade80;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        
+        @media (max-width: 768px) {
+            .components-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ecosystem-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            h2 {
+                font-size: 2em;
+            }
+        }
+        
+        .keyword {
+            color: #f59e0b;
+        }
+        
+        .string {
+            color: #4ade80;
+        }
+        
+        .comment {
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>OpenTelemetry 완벽 가이드</h1>
+            <p class="subtitle">분산 시스템의 관측 가능성을 위한 표준 프레임워크</p>
+        </header>
+        
+        <section class="section">
+            <h2>OpenTelemetry 핵심 구성요소</h2>
+            
+            <div class="components-grid">
+                <div class="component-card" onclick="showComponentDetail('api')">
+                    <div class="component-icon">📡</div>
+                    <h3 class="component-title">API</h3>
+                    <p class="component-description">
+                        계측(Instrumentation)을 위한 표준 인터페이스를 제공합니다.
+                    </p>
+                    <ul class="component-features">
+                        <li>언어별 API 제공</li>
+                        <li>Tracer, Meter, Logger 인터페이스</li>
+                        <li>벤더 중립적 설계</li>
+                        <li>Context Propagation</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card" onclick="showComponentDetail('sdk')">
+                    <div class="component-icon">🔧</div>
+                    <h3 class="component-title">SDK</h3>
+                    <p class="component-description">
+                        API의 구체적인 구현체로 데이터 수집과 처리를 담당합니다.
+                    </p>
+                    <ul class="component-features">
+                        <li>샘플링 전략 설정</li>
+                        <li>배치 처리 및 버퍼링</li>
+                        <li>리소스 감지</li>
+                        <li>내보내기(Export) 구성</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card" onclick="showComponentDetail('instrumentation')">
+                    <div class="component-icon">🎯</div>
+                    <h3 class="component-title">Instrumentation</h3>
+                    <p class="component-description">
+                        애플리케이션과 라이브러리에 관측 가능성을 추가하는 코드입니다.
+                    </p>
+                    <ul class="component-features">
+                        <li>자동 계측 라이브러리</li>
+                        <li>수동 계측 도구</li>
+                        <li>프레임워크별 통합</li>
+                        <li>플러그인 시스템</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card" onclick="showComponentDetail('collector')">
+                    <div class="component-icon">📊</div>
+                    <h3 class="component-title">Collector</h3>
+                    <p class="component-description">
+                        텔레메트리 데이터를 수신, 처리, 내보내는 중앙 서비스입니다.
+                    </p>
+                    <ul class="component-features">
+                        <li>다양한 수신자(Receiver)</li>
+                        <li>데이터 처리 파이프라인</li>
+                        <li>다중 내보내기(Exporter)</li>
+                        <li>성능 최적화</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card" onclick="showComponentDetail('exporters')">
+                    <div class="component-icon">🚀</div>
+                    <h3 class="component-title">Exporters</h3>
+                    <p class="component-description">
+                        수집된 데이터를 백엔드 시스템으로 전송하는 컴포넌트입니다.
+                    </p>
+                    <ul class="component-features">
+                        <li>Jaeger Exporter</li>
+                        <li>Prometheus Exporter</li>
+                        <li>OTLP Exporter</li>
+                        <li>커스텀 Exporter</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card" onclick="showComponentDetail('resources')">
+                    <div class="component-icon">🏷️</div>
+                    <h3 class="component-title">Resources</h3>
+                    <p class="component-description">
+                        텔레메트리를 생성하는 엔티티에 대한 메타데이터입니다.
+                    </p>
+                    <ul class="component-features">
+                        <li>서비스 이름 및 버전</li>
+                        <li>호스트 정보</li>
+                        <li>클라우드 프로바이더 정보</li>
+                        <li>컨테이너/쿠버네티스 정보</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>실제 사용 예제</h2>
+            
+            <div class="tab-container">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('javascript')">JavaScript/Node.js</button>
+                    <button class="tab" onclick="showTab('python')">Python</button>
+                    <button class="tab" onclick="showTab('java')">Java</button>
+                    <button class="tab" onclick="showTab('go')">Go</button>
+                </div>
+                
+                <div id="javascript" class="tab-content active">
+                    <h3>Node.js에서 OpenTelemetry 설정하기</h3>
+                    <div class="code-example">
+                        <pre><span class="comment">// 필요한 패키지 설치</span>
+<span class="keyword">npm install</span> @opentelemetry/api
+<span class="keyword">npm install</span> @opentelemetry/sdk-node
+<span class="keyword">npm install</span> @opentelemetry/auto-instrumentations-node
+<span class="keyword">npm install</span> @opentelemetry/exporter-trace-otlp-http</pre>
+                    </div>
+                    
+                    <div class="code-example">
+                        <pre><span class="comment">// tracing.js - OpenTelemetry 초기화</span>
+<span class="keyword">const</span> { NodeSDK } = <span class="keyword">require</span>(<span class="string">'@opentelemetry/sdk-node'</span>);
+<span class="keyword">const</span> { getNodeAutoInstrumentations } = <span class="keyword">require</span>(<span class="string">'@opentelemetry/auto-instrumentations-node'</span>);
+<span class="keyword">const</span> { Resource } = <span class="keyword">require</span>(<span class="string">'@opentelemetry/resources'</span>);
+<span class="keyword">const</span> { SemanticResourceAttributes } = <span class="keyword">require</span>(<span class="string">'@opentelemetry/semantic-conventions'</span>);
+
+<span class="comment">// Jaeger로 내보내기 설정</span>
+<span class="keyword">const</span> { JaegerExporter } = <span class="keyword">require</span>(<span class="string">'@opentelemetry/exporter-jaeger'</span>);
+
+<span class="keyword">const</span> jaegerExporter = <span class="keyword">new</span> JaegerExporter({
+  endpoint: <span class="string">'http://localhost:14268/api/traces'</span>,
+});
+
+<span class="keyword">const</span> sdk = <span class="keyword">new</span> NodeSDK({
+  resource: <span class="keyword">new</span> Resource({
+    [SemanticResourceAttributes.SERVICE_NAME]: <span class="string">'my-service'</span>,
+    [SemanticResourceAttributes.SERVICE_VERSION]: <span class="string">'1.0.0'</span>,
+  }),
+  traceExporter: jaegerExporter,
+  instrumentations: [getNodeAutoInstrumentations()]
+});
+
+<span class="comment">// SDK 초기화</span>
+sdk.start()
+  .then(() => console.log(<span class="string">'Tracing initialized'</span>))
+  .catch((error) => console.log(<span class="string">'Error initializing tracing'</span>, error));
+
+<span class="comment">// Graceful shutdown</span>
+process.on(<span class="string">'SIGTERM'</span>, () => {
+  sdk.shutdown()
+    .then(() => console.log(<span class="string">'Tracing terminated'</span>))
+    .catch((error) => console.log(<span class="string">'Error terminating tracing'</span>, error))
+    .finally(() => process.exit(0));
+});</pre>
+                    </div>
+                    
+                    <div class="code-example">
+                        <pre><span class="comment">// app.js - Express 애플리케이션 예제</span>
+<span class="keyword">require</span>(<span class="string">'./tracing'</span>); <span class="comment">// OpenTelemetry 초기화</span>
+
+<span class="keyword">const</span> express = <span class="keyword">require</span>(<span class="string">'express'</span>);
+<span class="keyword">const</span> { trace } = <span class="keyword">require</span>(<span class="string">'@opentelemetry/api'</span>);
+
+<span class="keyword">const</span> app = express();
+<span class="keyword">const</span> tracer = trace.getTracer(<span class="string">'my-service-tracer'</span>);
+
+app.get(<span class="string">'/api/users'</span>, <span class="keyword">async</span> (req, res) => {
+  <span class="comment">// 커스텀 span 생성</span>
+  <span class="keyword">const</span> span = tracer.startSpan(<span class="string">'get-users'</span>);
+  
+  <span class="keyword">try</span> {
+    <span class="comment">// 속성 추가</span>
+    span.setAttributes({
+      <span class="string">'http.method'</span>: req.method,
+      <span class="string">'http.url'</span>: req.url,
+      <span class="string">'user.id'</span>: req.query.userId
+    });
+    
+    <span class="comment">// 비즈니스 로직</span>
+    <span class="keyword">const</span> users = <span class="keyword">await</span> getUsersFromDatabase();
+    
+    span.setStatus({ code: SpanStatusCode.OK });
+    res.json(users);
+  } <span class="keyword">catch</span> (error) {
+    span.recordException(error);
+    span.setStatus({ code: SpanStatusCode.ERROR });
+    res.status(500).json({ error: error.message });
+  } <span class="keyword">finally</span> {
+    span.end();
+  }
+});
+
+app.listen(3000, () => {
+  console.log(<span class="string">'Server running on port 3000'</span>);
+});</pre>
+                    </div>
+                </div>
+                
+                <div id="python" class="tab-content">
+                    <h3>Python에서 OpenTelemetry 설정하기</h3>
+                    <div class="code-example">
+                        <pre><span class="comment"># 필요한 패키지 설치</span>
+pip install opentelemetry-api
+pip install opentelemetry-sdk
+pip install opentelemetry-instrumentation
+pip install opentelemetry-exporter-jaeger</pre>
+                    </div>
+                    
+                    <div class="code-example">
+                        <pre><span class="comment"># tracing.py - OpenTelemetry 초기화</span>
+<span class="keyword">from</span> opentelemetry <span class="keyword">import</span> trace
+<span class="keyword">from</span> opentelemetry.exporter.jaeger.thrift <span class="keyword">import</span> JaegerExporter
+<span class="keyword">from</span> opentelemetry.sdk.resources <span class="keyword">import</span> SERVICE_NAME, Resource
+<span class="keyword">from</span> opentelemetry.sdk.trace <span class="keyword">import</span> TracerProvider
+<span class="keyword">from</span> opentelemetry.sdk.trace.export <span class="keyword">import</span> BatchSpanProcessor
+
+<span class="comment"># 리소스 설정</span>
+resource = Resource(attributes={
+    SERVICE_NAME: <span class="string">"my-python-service"</span>
+})
+
+<span class="comment"># TracerProvider 설정</span>
+provider = TracerProvider(resource=resource)
+processor = BatchSpanProcessor(
+    JaegerExporter(
+        agent_host_name=<span class="string">"localhost"</span>,
+        agent_port=<span class="number">6831</span>,
+    )
+)
+provider.add_span_processor(processor)
+
+<span class="comment"># 전역 TracerProvider 설정</span>
+trace.set_tracer_provider(provider)
+
+<span class="comment"># Tracer 가져오기</span>
+tracer = trace.get_tracer(__name__)</pre>
+                    </div>
+                    
+                    <div class="code-example">
+                        <pre><span class="comment"># app.py - Flask 애플리케이션 예제</span>
+<span class="keyword">from</span> flask <span class="keyword">import</span> Flask, jsonify
+<span class="keyword">from</span> opentelemetry.instrumentation.flask <span class="keyword">import</span> FlaskInstrumentor
+<span class="keyword">from</span> tracing <span class="keyword">import</span> tracer
+
+app = Flask(__name__)
+
+<span class="comment"># Flask 자동 계측</span>
+FlaskInstrumentor().instrument_app(app)
+
+<span class="keyword">@app.route</span>(<span class="string">'/api/users'</span>)
+<span class="keyword">def</span> get_users():
+    <span class="keyword">with</span> tracer.start_as_current_span(<span class="string">"get-users"</span>) <span class="keyword">as</span> span:
+        <span class="comment"># 속성 추가</span>
+        span.set_attribute(<span class="string">"user.count"</span>, <span class="number">100</span>)
+        
+        <span class="keyword">try</span>:
+            <span class="comment"># 데이터베이스 작업 시뮬레이션</span>
+            <span class="keyword">with</span> tracer.start_as_current_span(<span class="string">"database-query"</span>):
+                users = fetch_users_from_db()
+            
+            <span class="keyword">return</span> jsonify(users)
+        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:
+            span.record_exception(e)
+            <span class="keyword">return</span> jsonify({<span class="string">"error"</span>: str(e)}), <span class="number">500</span>
+
+<span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:
+    app.run(debug=<span class="keyword">True</span>)</pre>
+                    </div>
+                </div>
+                
+                <div id="java" class="tab-content">
+                    <h3>Java에서 OpenTelemetry 설정하기</h3>
+                    <div class="code-example">
+                        <pre><span class="comment">// build.gradle 의존성 추가</span>
+dependencies {
+    implementation <span class="string">'io.opentelemetry:opentelemetry-api:1.32.0'</span>
+    implementation <span class="string">'io.opentelemetry:opentelemetry-sdk:1.32.0'</span>
+    implementation <span class="string">'io.opentelemetry:opentelemetry-exporter-jaeger:1.32.0'</span>
+    implementation <span class="string">'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:1.32.0-alpha'</span>
+}</pre>
+                    </div>
+                    
+                    <div class="code-example">
+                        <pre><span class="comment">// OpenTelemetryConfig.java</span>
+<span class="keyword">import</span> io.opentelemetry.api.OpenTelemetry;
+<span class="keyword">import</span> io.opentelemetry.api.trace.Tracer;
+<span class="keyword">import</span> io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
+<span class="keyword">import</span> io.opentelemetry.sdk.OpenTelemetrySdk;
+<span class="keyword">import</span> io.opentelemetry.sdk.resources.Resource;
+<span class="keyword">import</span> io.opentelemetry.sdk.trace.SdkTracerProvider;
+<span class="keyword">import</span> io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+<span class="keyword">import</span> io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+<span class="keyword">import</span> org.springframework.context.annotation.Bean;
+<span class="keyword">import</span> org.springframework.context.annotation.Configuration;
+
+@Configuration
+<span class="keyword">public class</span> OpenTelemetryConfig {
+    
+    @Bean
+    <span class="keyword">public</span> OpenTelemetry openTelemetry() {
+        Resource resource = Resource.getDefault()
+            .merge(Resource.create(Attributes.of(
+                ResourceAttributes.SERVICE_NAME, <span class="string">"my-java-service"</span>,
+                ResourceAttributes.SERVICE_VERSION, <span class="string">"1.0.0"</span>
+            )));
+        
+        JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
+            .setEndpoint(<span class="string">"http://localhost:14250"</span>)
+            .build();
+        
+        SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+            .addSpanProcessor(BatchSpanProcessor.builder(jaegerExporter).build())
+            .setResource(resource)
+            .build();
+        
+        <span class="keyword">return</span> OpenTelemetrySdk.builder()
+            .setTracerProvider(sdkTracerProvider)
+            .buildAndRegisterGlobal();
+    }
+    
+    @Bean
+    <span class="keyword">public</span> Tracer tracer(OpenTelemetry openTelemetry) {
+        <span class="keyword">return</span> openTelemetry.getTracer(<span class="string">"my-service-tracer"</span>);
+    }
+}</pre>
+                    </div>
+                </div>
+                
+                <div id="go" class="tab-content">
+                    <h3>Go에서 OpenTelemetry 설정하기</h3>
+                    <div class="code-example">
+                        <pre><span class="comment">// go.mod 의존성</span>
+<span class="keyword">require</span> (
+    go.opentelemetry.io/otel v1.19.0
+    go.opentelemetry.io/otel/exporters/jaeger v1.19.0
+    go.opentelemetry.io/otel/sdk v1.19.0
+    go.opentelemetry.io/otel/trace v1.19.0
+)</pre>
+                    </div>
+                    
+                    <div class="code-example">
+                        <pre><span class="comment">// tracer.go - OpenTelemetry 초기화</span>
+<span class="keyword">package</span> main
+
+<span class="keyword">import</span> (
+    <span class="string">"context"</span>
+    <span class="string">"log"</span>
+    
+    <span class="string">"go.opentelemetry.io/otel"</span>
+    <span class="string">"go.opentelemetry.io/otel/attribute"</span>
+    <span class="string">"go.opentelemetry.io/otel/exporters/jaeger"</span>
+    <span class="string">"go.opentelemetry.io/otel/sdk/resource"</span>
+    sdktrace <span class="string">"go.opentelemetry.io/otel/sdk/trace"</span>
+    semconv <span class="string">"go.opentelemetry.io/otel/semconv/v1.17.0"</span>
+)
+
+<span class="keyword">func</span> initTracer() (<span class="keyword">func</span>(context.Context) error, error) {
+    <span class="comment">// Jaeger exporter 생성</span>
+    exp, err := jaeger.New(jaeger.WithCollectorEndpoint(
+        jaeger.WithEndpoint(<span class="string">"http://localhost:14268/api/traces"</span>),
+    ))
+    <span class="keyword">if</span> err != nil {
+        <span class="keyword">return</span> nil, err
+    }
+    
+    <span class="comment">// TracerProvider 생성</span>
+    tp := sdktrace.NewTracerProvider(
+        sdktrace.WithBatcher(exp),
+        sdktrace.WithResource(resource.NewWithAttributes(
+            semconv.SchemaURL,
+            semconv.ServiceName(<span class="string">"my-go-service"</span>),
+            semconv.ServiceVersion(<span class="string">"1.0.0"</span>),
+            attribute.String(<span class="string">"environment"</span>, <span class="string">"production"</span>),
+        )),
+    )
+    
+    <span class="comment">// 전역 TracerProvider 설정</span>
+    otel.SetTracerProvider(tp)
+    
+    <span class="keyword">return</span> tp.Shutdown, nil
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>OpenTelemetry Collector 설정</h2>
+            
+            <div class="flow-diagram">
+                <h3>Collector 데이터 플로우</h3>
+                <div style="margin: 30px 0;">
+                    <div class="flow-step">Receivers</div>
+                    <div class="flow-arrow"></div>
+                    <div class="flow-step">Processors</div>
+                    <div class="flow-arrow"></div>
+                    <div class="flow-step">Exporters</div>
+                </div>
+            </div>
+            
+            <div class="code-example">
+                <pre><span class="comment"># otel-collector-config.yaml</span>
+<span class="keyword">receivers:</span>
+  <span class="keyword">otlp:</span>
+    <span class="keyword">protocols:</span>
+      <span class="keyword">grpc:</span>
+        <span class="keyword">endpoint:</span> <span class="string">0.0.0.0:4317</span>
+      <span class="keyword">http:</span>
+        <span class="keyword">endpoint:</span> <span class="string">0.0.0.0:4318</span>
+  
+  <span class="comment"># Prometheus 메트릭 수집</span>
+  <span class="keyword">prometheus:</span>
+    <span class="keyword">config:</span>
+      <span class="keyword">scrape_configs:</span>
+        - <span class="keyword">job_name:</span> <span class="string">'otel-collector'</span>
+          <span class="keyword">scrape_interval:</span> <span class="string">10s</span>
+          <span class="keyword">static_configs:</span>
+            - <span class="keyword">targets:</span> [<span class="string">'0.0.0.0:8888'</span>]
+
+<span class="keyword">processors:</span>
+  <span class="comment"># 배치 처리로 성능 최적화</span>
+  <span class="keyword">batch:</span>
+    <span class="keyword">timeout:</span> <span class="string">1s</span>
+    <span class="keyword">send_batch_size:</span> <span class="number">1024</span>
+  
+  <span class="comment"># 리소스 속성 추가</span>
+  <span class="keyword">resource:</span>
+    <span class="keyword">attributes:</span>
+      - <span class="keyword">key:</span> <span class="string">environment</span>
+        <span class="keyword">value:</span> <span class="string">production</span>
+        <span class="keyword">action:</span> <span class="string">insert</span>
+      - <span class="keyword">key:</span> <span class="string">team</span>
+        <span class="keyword">value:</span> <span class="string">backend</span>
+        <span class="keyword">action:</span> <span class="string">insert</span>
+  
+  <span class="comment"># 메모리 제한</span>
+  <span class="keyword">memory_limiter:</span>
+    <span class="keyword">check_interval:</span> <span class="string">1s</span>
+    <span class="keyword">limit_mib:</span> <span class="number">512</span>
+
+<span class="keyword">exporters:</span>
+  <span class="comment"># Jaeger로 추적 데이터 내보내기</span>
+  <span class="keyword">jaeger:</span>
+    <span class="keyword">endpoint:</span> <span class="string">jaeger-collector:14250</span>
+    <span class="keyword">tls:</span>
+      <span class="keyword">insecure:</span> <span class="keyword">true</span>
+  
+  <span class="comment"># Prometheus로 메트릭 내보내기</span>
+  <span class="keyword">prometheus:</span>
+    <span class="keyword">endpoint:</span> <span class="string">"0.0.0.0:8889"</span>
+  
+  <span class="comment"># 로그를 Elasticsearch로 내보내기</span>
+  <span class="keyword">elasticsearch:</span>
+    <span class="keyword">endpoints:</span> [<span class="string">http://elasticsearch:9200</span>]
+    <span class="keyword">logs_index:</span> <span class="string">otel-logs</span>
+
+<span class="keyword">service:</span>
+  <span class="keyword">pipelines:</span>
+    <span class="keyword">traces:</span>
+      <span class="keyword">receivers:</span> [otlp]
+      <span class="keyword">processors:</span> [memory_limiter, batch, resource]
+      <span class="keyword">exporters:</span> [jaeger]
+    
+    <span class="keyword">metrics:</span>
+      <span class="keyword">receivers:</span> [otlp, prometheus]
+      <span class="keyword">processors:</span> [memory_limiter, batch, resource]
+      <span class="keyword">exporters:</span> [prometheus]
+    
+    <span class="keyword">logs:</span>
+      <span class="keyword">receivers:</span> [otlp]
+      <span class="keyword">processors:</span> [memory_limiter, batch]
+      <span class="keyword">exporters:</span> [elasticsearch]</pre>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>OpenTelemetry 에코시스템</h2>
+            
+            <div class="ecosystem-grid">
+                <div class="ecosystem-card">
+                    <h4>🔍 추적(Tracing) 백엔드</h4>
+                    <p>분산 추적 데이터를 저장하고 분석하는 시스템</p>
+                    <div class="ecosystem-links">
+                        <a href="https://www.jaegertracing.io/" class="ecosystem-link">Jaeger</a>
+                        <a href="https://zipkin.io/" class="ecosystem-link">Zipkin</a>
+                        <a href="https://aws.amazon.com/xray/" class="ecosystem-link">AWS X-Ray</a>
+                        <a href="https://www.dynatrace.com/" class="ecosystem-link">Dynatrace</a>
+                    </div>
+                </div>
+                
+                <div class="ecosystem-card">
+                    <h4>📊 메트릭(Metrics) 백엔드</h4>
+                    <p>시계열 메트릭 데이터를 저장하고 시각화하는 시스템</p>
+                    <div class="ecosystem-links">
+                        <a href="https://prometheus.io/" class="ecosystem-link">Prometheus</a>
+                        <a href="https://grafana.com/" class="ecosystem-link">Grafana</a>
+                        <a href="https://www.datadoghq.com/" class="ecosystem-link">Datadog</a>
+                        <a href="https://newrelic.com/" class="ecosystem-link">New Relic</a>
+                    </div>
+                </div>
+                
+                <div class="ecosystem-card">
+                    <h4>📝 로그(Logs) 백엔드</h4>
+                    <p>로그 데이터를 수집, 저장, 검색하는 시스템</p>
+                    <div class="ecosystem-links">
+                        <a href="https://www.elastic.co/" class="ecosystem-link">Elasticsearch</a>
+                        <a href="https://www.splunk.com/" class="ecosystem-link">Splunk</a>
+                        <a href="https://grafana.com/oss/loki/" class="ecosystem-link">Loki</a>
+                        <a href="https://www.sumologic.com/" class="ecosystem-link">Sumo Logic</a>
+                    </div>
+                </div>
+                
+                <div class="ecosystem-card">
+                    <h4>🛠️ 계측 라이브러리</h4>
+                    <p>인기 프레임워크와 라이브러리를 위한 자동 계측</p>
+                    <div class="ecosystem-links">
+                        <a href="https://github.com/open-telemetry/opentelemetry-js-contrib" class="ecosystem-link">JS Contrib</a>
+                        <a href="https://github.com/open-telemetry/opentelemetry-python-contrib" class="ecosystem-link">Python Contrib</a>
+                        <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation" class="ecosystem-link">Java Auto</a>
+                        <a href="https://github.com/open-telemetry/opentelemetry-go-contrib" class="ecosystem-link">Go Contrib</a>
+                    </div>
+                </div>
+                
+                <div class="ecosystem-card">
+                    <h4>🌐 클라우드 서비스</h4>
+                    <p>관리형 OpenTelemetry 서비스</p>
+                    <div class="ecosystem-links">
+                        <a href="https://cloud.google.com/trace" class="ecosystem-link">Google Cloud Trace</a>
+                        <a href="https://azure.microsoft.com/services/monitor/" class="ecosystem-link">Azure Monitor</a>
+                        <a href="https://aws.amazon.com/otel/" class="ecosystem-link">AWS Distro</a>
+                        <a href="https://www.honeycomb.io/" class="ecosystem-link">Honeycomb</a>
+                    </div>
+                </div>
+                
+                <div class="ecosystem-card">
+                    <h4>🔧 개발 도구</h4>
+                    <p>개발과 디버깅을 위한 도구</p>
+                    <div class="ecosystem-links">
+                        <a href="https://github.com/open-telemetry/opentelemetry-collector" class="ecosystem-link">OTel Collector</a>
+                        <a href="https://opentelemetry.io/docs/reference/specification/" class="ecosystem-link">Specification</a>
+                        <a href="https://github.com/open-telemetry/opentelemetry-operator" class="ecosystem-link">K8s Operator</a>
+                        <a href="https://opentelemetry.io/docs/instrumentation/" class="ecosystem-link">Instrumentation</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>빠른 시작 가이드</h2>
+            
+            <div class="setup-steps">
+                <div class="setup-step">
+                    <h4>환경 준비</h4>
+                    <p>Docker와 Docker Compose를 설치하고, OpenTelemetry 데모 환경을 구성합니다.</p>
+                    <div class="code-example">
+                        <pre><span class="comment"># OpenTelemetry 데모 클론</span>
+git clone https://github.com/open-telemetry/opentelemetry-demo.git
+cd opentelemetry-demo
+
+<span class="comment"># Docker Compose로 실행</span>
+docker-compose up -d</pre>
+                    </div>
+                </div>
+                
+                <div class="setup-step">
+                    <h4>SDK 설치</h4>
+                    <p>사용하는 프로그래밍 언어에 맞는 OpenTelemetry SDK를 설치합니다.</p>
+                </div>
+                
+                <div class="setup-step">
+                    <h4>계측 추가</h4>
+                    <p>자동 계측을 활성화하거나 수동으로 스팬을 생성합니다.</p>
+                </div>
+                
+                <div class="setup-step">
+                    <h4>Collector 구성</h4>
+                    <p>수집된 데이터를 처리하고 백엔드로 전송하도록 Collector를 설정합니다.</p>
+                </div>
+                
+                <div class="setup-step">
+                    <h4>모니터링 시작</h4>
+                    <p>Jaeger, Prometheus, Grafana 등에서 수집된 데이터를 확인합니다.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section interactive-demo">
+            <h2>인터랙티브 데모: OpenTelemetry 작동 방식</h2>
+            <p style="color: #b8b8b8; margin-bottom: 20px;">
+                버튼을 클릭하여 OpenTelemetry가 어떻게 데이터를 수집하고 처리하는지 확인해보세요
+            </p>
+            
+            <div>
+                <button class="demo-button" onclick="simulateInstrumentation()">계측 시뮬레이션</button>
+                <button class="demo-button" onclick="simulateCollection()">데이터 수집</button>
+                <button class="demo-button" onclick="simulateExport()">백엔드로 내보내기</button>
+                <button class="demo-button" onclick="clearDemoOutput()">초기화</button>
+            </div>
+            
+            <div class="demo-output" id="demoOutput">
+                <span style="color: #6b7280;">데모를 시작하려면 버튼을 클릭하세요...</span>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // 모든 탭과 내용 숨기기
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // 선택된 탭과 내용 표시
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+        
+        function showComponentDetail(component) {
+            console.log(`${component} 컴포넌트 상세 정보`);
+        }
+        
+        let demoStep = 0;
+        const demoOutput = document.getElementById('demoOutput');
+        
+        function addDemoLine(text, color = '#4ade80') {
+            const line = document.createElement('div');
+            line.style.color = color;
+            line.style.marginBottom = '8px';
+            line.style.opacity = '0';
+            line.textContent = text;
+            
+            if (demoOutput.children.length === 1 && demoOutput.children[0].textContent.includes('데모를 시작')) {
+                demoOutput.innerHTML = '';
+            }
+            
+            demoOutput.appendChild(line);
+            
+            // 페이드인 애니메이션
+            setTimeout(() => {
+                line.style.transition = 'opacity 0.5s';
+                line.style.opacity = '1';
+            }, 50);
+        }
+        
+        function simulateInstrumentation() {
+            addDemoLine('[INSTRUMENTATION] 애플리케이션 코드에 계측 추가 중...', '#f59e0b');
+            
+            setTimeout(() => {
+                addDemoLine('✓ HTTP 서버 계측 활성화됨', '#4ade80');
+                addDemoLine('✓ 데이터베이스 클라이언트 계측 활성화됨', '#4ade80');
+                addDemoLine('✓ 캐시 클라이언트 계측 활성화됨', '#4ade80');
+            }, 500);
+            
+            setTimeout(() => {
+                addDemoLine('[TRACER] "my-service" Tracer 생성됨', '#667eea');
+                addDemoLine('[METER] "my-service" Meter 생성됨', '#667eea');
+            }, 1000);
+        }
+        
+        function simulateCollection() {
+            addDemoLine('\n[COLLECTION] 텔레메트리 데이터 수집 시작...', '#f59e0b');
+            
+            setTimeout(() => {
+                addDemoLine('📊 Metric: http_server_duration{method="GET", status="200"} = 45.23ms', '#4ade80');
+                addDemoLine('📊 Metric: db_connection_pool_size = 10', '#4ade80');
+            }, 300);
+            
+            setTimeout(() => {
+                addDemoLine('🔍 Trace: TraceID=a1b2c3d4e5f6 SpanID=1234567890', '#00f2fe');
+                addDemoLine('  └─ Span: GET /api/users (duration: 125ms)', '#00f2fe');
+                addDemoLine('    └─ Span: SELECT * FROM users (duration: 89ms)', '#00f2fe');
+            }, 600);
+            
+            setTimeout(() => {
+                addDemoLine('📝 Log: level=INFO msg="User login successful" userId=12345', '#f5576c');
+                addDemoLine('📝 Log: level=WARN msg="Cache miss" key="user:12345"', '#f5576c');
+            }, 900);
+        }
+        
+        function simulateExport() {
+            addDemoLine('\n[EXPORT] 수집된 데이터를 백엔드로 전송 중...', '#f59e0b');
+            
+            setTimeout(() => {
+                addDemoLine('→ OTLP Exporter: 배치 크기 = 1024 spans', '#667eea');
+                addDemoLine('→ Jaeger로 추적 데이터 전송 중... [200 OK]', '#4ade80');
+            }, 300);
+            
+            setTimeout(() => {
+                addDemoLine('→ Prometheus로 메트릭 노출 중... [/metrics 엔드포인트]', '#4ade80');
+                addDemoLine('→ Elasticsearch로 로그 전송 중... [201 Created]', '#4ade80');
+            }, 600);
+            
+            setTimeout(() => {
+                addDemoLine('\n✅ 모든 텔레메트리 데이터가 성공적으로 전송되었습니다!', '#4ade80');
+                addDemoLine('📊 처리된 스팬: 1,234 | 메트릭: 567 | 로그: 890', '#b8b8b8');
+            }, 900);
+        }
+        
+        function clearDemoOutput() {
+            demoOutput.innerHTML = '<span style="color: #6b7280;">데모를 시작하려면 버튼을 클릭하세요...</span>';
+        }
+        
+        // 페이지 로드 시 애니메이션
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.section').forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    section.style.transition = 'all 0.8s ease-out';
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>

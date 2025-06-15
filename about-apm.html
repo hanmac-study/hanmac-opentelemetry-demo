@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APM(Application Performance Monitoring) 완벽 가이드</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            color: #333;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        h2 {
+            color: #1e3a8a;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        h3 {
+            color: #3730a3;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        
+        .apm-definition {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+            font-size: 1.2em;
+            line-height: 1.8;
+            color: #1e293b;
+        }
+        
+        .apm-components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .component-card {
+            background: linear-gradient(145deg, #f8fafc, #ffffff);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        
+        .component-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-color: #3730a3;
+        }
+        
+        .component-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .metric-card {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            border-left: 4px solid #4f46e5;
+        }
+        
+        .metric-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .metric-card h4 {
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1e293b;
+            margin: 10px 0;
+        }
+        
+        .metric-description {
+            color: #64748b;
+            font-size: 0.9em;
+        }
+        
+        .apm-workflow {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+        }
+        
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .workflow-step {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .workflow-step::after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            color: #4f46e5;
+        }
+        
+        .workflow-step:last-child::after {
+            display: none;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-weight: bold;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .benefit-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .benefit-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        
+        .benefit-icon {
+            font-size: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .benefit-card h4 {
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+        
+        .tools-showcase {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .tool-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .tool-card:hover {
+            border-color: #4f46e5;
+            transform: scale(1.05);
+        }
+        
+        .tool-logo {
+            height: 60px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        
+        .tool-name {
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        
+        .tool-type {
+            color: #64748b;
+            font-size: 0.85em;
+        }
+        
+        .interactive-demo {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+            color: white;
+            text-align: center;
+        }
+        
+        .demo-screen {
+            background: #0f172a;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .demo-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+        
+        .demo-dot:nth-child(2) {
+            background: #f59e0b;
+        }
+        
+        .demo-dot:nth-child(3) {
+            background: #10b981;
+        }
+        
+        .demo-content {
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .demo-metric {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .demo-metric-name {
+            color: #94a3b8;
+        }
+        
+        .demo-metric-value {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .demo-metric-value.good {
+            color: #10b981;
+        }
+        
+        .demo-metric-value.warning {
+            color: #f59e0b;
+        }
+        
+        .demo-metric-value.critical {
+            color: #ef4444;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .demo-button {
+            padding: 12px 30px;
+            background: white;
+            color: #4f46e5;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .comparison-table {
+            overflow-x: auto;
+            margin: 30px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        tr:hover {
+            background: #f9fafb;
+        }
+        
+        .feature-check {
+            color: #10b981;
+            font-size: 1.2em;
+        }
+        
+        .feature-partial {
+            color: #f59e0b;
+            font-size: 1.2em;
+        }
+        
+        .feature-no {
+            color: #ef4444;
+            font-size: 1.2em;
+        }
+        
+        @media (max-width: 768px) {
+            .workflow-steps {
+                flex-direction: column;
+            }
+            
+            .workflow-step::after {
+                display: none;
+            }
+            
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            h2 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>APM(Application Performance Monitoring)</h1>
+            <p class="subtitle">애플리케이션 성능을 실시간으로 모니터링하고 최적화하는 필수 도구</p>
+        </header>
+        
+        <section class="section">
+            <div class="apm-definition">
+                <h2 style="color: #1e3a8a; margin-bottom: 20px;">APM이란?</h2>
+                <p>
+                    <strong>Application Performance Monitoring(APM)</strong>은 소프트웨어 애플리케이션의 
+                    성능과 가용성을 모니터링하고 관리하는 IT 관리 솔루션입니다.<br><br>
+                    사용자 경험에 영향을 미치는 성능 문제를 감지하고, 진단하며, 
+                    해결하는 데 필요한 인사이트를 제공합니다.
+                </p>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>APM의 핵심 구성 요소</h2>
+            
+            <div class="apm-components">
+                <div class="component-card" onclick="showComponentDetail('monitoring')">
+                    <div class="component-icon">📊</div>
+                    <h3>실시간 모니터링</h3>
+                    <p>애플리케이션의 성능 메트릭을 실시간으로 수집하고 시각화합니다.</p>
+                    <ul style="list-style: none; padding: 0; margin-top: 15px; text-align: left;">
+                        <li>• 응답 시간 추적</li>
+                        <li>• 처리량 모니터링</li>
+                        <li>• 에러율 감시</li>
+                        <li>• 리소스 사용률</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card" onclick="showComponentDetail('tracing')">
+                    <div class="component-icon">🔍</div>
+                    <h3>분산 추적</h3>
+                    <p>마이크로서비스 환경에서 요청의 전체 경로를 추적합니다.</p>
+                    <ul style="list-style: none; padding: 0; margin-top: 15px; text-align: left;">
+                        <li>• 서비스 간 통신 추적</li>
+                        <li>• 병목 지점 식별</li>
+                        <li>• 의존성 매핑</li>
+                        <li>• 지연 시간 분석</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card" onclick="showComponentDetail('analytics')">
+                    <div class="component-icon">📈</div>
+                    <h3>성능 분석</h3>
+                    <p>수집된 데이터를 분석하여 인사이트를 도출합니다.</p>
+                    <ul style="list-style: none; padding: 0; margin-top: 15px; text-align: left;">
+                        <li>• 트렌드 분석</li>
+                        <li>• 이상 징후 감지</li>
+                        <li>• 근본 원인 분석</li>
+                        <li>• 예측 분석</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card" onclick="showComponentDetail('alerts')">
+                    <div class="component-icon">🚨</div>
+                    <h3>알림 및 경고</h3>
+                    <p>문제 발생 시 즉시 알림을 전송합니다.</p>
+                    <ul style="list-style: none; padding: 0; margin-top: 15px; text-align: left;">
+                        <li>• 임계값 기반 알림</li>
+                        <li>• 다중 채널 알림</li>
+                        <li>• 에스컬레이션 정책</li>
+                        <li>• 알림 그룹화</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card" onclick="showComponentDetail('user')">
+                    <div class="component-icon">👥</div>
+                    <h3>사용자 경험 모니터링</h3>
+                    <p>실제 사용자의 경험을 추적하고 분석합니다.</p>
+                    <ul style="list-style: none; padding: 0; margin-top: 15px; text-align: left;">
+                        <li>• 페이지 로드 시간</li>
+                        <li>• 사용자 행동 분석</li>
+                        <li>• 브라우저별 성능</li>
+                        <li>• 지역별 성능</li>
+                    </ul>
+                </div>
+                
+                <div class="component-card" onclick="showComponentDetail('infrastructure')">
+                    <div class="component-icon">🖥️</div>
+                    <h3>인프라 모니터링</h3>
+                    <p>애플리케이션이 실행되는 인프라를 모니터링합니다.</p>
+                    <ul style="list-style: none; padding: 0; margin-top: 15px; text-align: left;">
+                        <li>• 서버 상태 확인</li>
+                        <li>• 컨테이너 모니터링</li>
+                        <li>• 네트워크 성능</li>
+                        <li>• 데이터베이스 상태</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>주요 성능 메트릭</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h4>응답 시간 (Response Time)</h4>
+                    <div class="metric-value">250ms</div>
+                    <p class="metric-description">사용자 요청에 대한 평균 응답 시간</p>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>처리량 (Throughput)</h4>
+                    <div class="metric-value">1,000 req/s</div>
+                    <p class="metric-description">초당 처리되는 요청 수</p>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>에러율 (Error Rate)</h4>
+                    <div class="metric-value">0.5%</div>
+                    <p class="metric-description">전체 요청 중 실패한 요청의 비율</p>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>포화도 (Saturation)</h4>
+                    <div class="metric-value">75%</div>
+                    <p class="metric-description">시스템 리소스 사용률</p>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>Apdex 점수</h4>
+                    <div class="metric-value">0.95</div>
+                    <p class="metric-description">애플리케이션 성능 지수 (0~1)</p>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>가용성 (Availability)</h4>
+                    <div class="metric-value">99.9%</div>
+                    <p class="metric-description">서비스 가동 시간 비율</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>APM 작동 방식</h2>
+            
+            <div class="apm-workflow">
+                <h3 style="text-align: center; margin-bottom: 30px;">데이터 수집부터 인사이트까지</h3>
+                
+                <div class="workflow-steps">
+                    <div class="workflow-step">
+                        <div class="step-number">1</div>
+                        <h4>데이터 수집</h4>
+                        <p>에이전트가 애플리케이션에서 성능 데이터를 수집</p>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <h4>데이터 전송</h4>
+                        <p>수집된 데이터를 APM 서버로 안전하게 전송</p>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <h4>데이터 처리</h4>
+                        <p>데이터 집계, 정규화, 상관관계 분석</p>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <h4>시각화</h4>
+                        <p>대시보드와 리포트로 데이터 시각화</p>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">5</div>
+                        <h4>알림</h4>
+                        <p>이상 징후 감지 시 즉시 알림 발송</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>APM의 주요 이점</h2>
+            
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">⚡</div>
+                    <h4>빠른 문제 해결</h4>
+                    <p>문제의 근본 원인을 신속하게 파악하여 MTTR(평균 복구 시간)을 단축합니다.</p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">💰</div>
+                    <h4>비용 절감</h4>
+                    <p>성능 문제로 인한 수익 손실을 방지하고 운영 비용을 절감합니다.</p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">😊</div>
+                    <h4>사용자 만족도 향상</h4>
+                    <p>빠른 응답 시간과 안정적인 서비스로 사용자 경험을 개선합니다.</p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">📊</div>
+                    <h4>데이터 기반 의사결정</h4>
+                    <p>정확한 성능 데이터를 기반으로 인프라 투자 결정을 내릴 수 있습니다.</p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">🔍</div>
+                    <h4>프로액티브 모니터링</h4>
+                    <p>문제가 사용자에게 영향을 미치기 전에 미리 감지하고 해결합니다.</p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">🚀</div>
+                    <h4>DevOps 효율성</h4>
+                    <p>개발팀과 운영팀 간의 협업을 강화하고 배포 신뢰성을 높입니다.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>주요 APM 도구</h2>
+            
+            <div class="tools-showcase">
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-logo">🟣</div>
+                        <div class="tool-name">Datadog</div>
+                        <div class="tool-type">SaaS • 풀스택 모니터링</div>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <div class="tool-logo">🟢</div>
+                        <div class="tool-name">New Relic</div>
+                        <div class="tool-type">SaaS • AI 기반 분석</div>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <div class="tool-logo">🔵</div>
+                        <div class="tool-name">Dynatrace</div>
+                        <div class="tool-type">SaaS • 자동 탐지</div>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <div class="tool-logo">🟠</div>
+                        <div class="tool-name">Elastic APM</div>
+                        <div class="tool-type">오픈소스 • ELK 스택</div>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <div class="tool-logo">🟡</div>
+                        <div class="tool-name">AppDynamics</div>
+                        <div class="tool-type">엔터프라이즈 • 비즈니스 분석</div>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <div class="tool-logo">🔴</div>
+                        <div class="tool-name">Scouter</div>
+                        <div class="tool-type">오픈소스 • 경량</div>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <div class="tool-logo">⚫</div>
+                        <div class="tool-name">Pinpoint</div>
+                        <div class="tool-type">오픈소스 • Java 특화</div>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <div class="tool-logo">🟤</div>
+                        <div class="tool-name">SkyWalking</div>
+                        <div class="tool-type">오픈소스 • 분산 추적</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section interactive-demo">
+            <h2 style="color: white; margin-bottom: 20px;">실시간 APM 대시보드 데모</h2>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: 30px;">
+                실제 APM 도구가 어떻게 작동하는지 확인해보세요
+            </p>
+            
+            <div class="demo-screen">
+                <div class="demo-header">
+                    <div class="demo-dot"></div>
+                    <div class="demo-dot"></div>
+                    <div class="demo-dot"></div>
+                </div>
+                
+                <div class="demo-content" id="demoContent">
+                    <h3 style="color: white; text-align: center; margin-bottom: 20px;">실시간 성능 메트릭</h3>
+                    
+                    <div id="metricsContainer">
+                        <!-- 메트릭이 여기에 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="demo-controls">
+                <button class="demo-button" onclick="startDemo()">모니터링 시작</button>
+                <button class="demo-button" onclick="simulateHighLoad()">고부하 시뮬레이션</button>
+                <button class="demo-button" onclick="simulateError()">에러 발생</button>
+                <button class="demo-button" onclick="resetDemo()">초기화</button>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>APM 도구 비교</h2>
+            
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>기능</th>
+                            <th>Datadog</th>
+                            <th>New Relic</th>
+                            <th>Elastic APM</th>
+                            <th>Pinpoint</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>실시간 모니터링</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>분산 추적</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>자동 계측</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-partial">◐</td>
+                            <td class="feature-check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>AI/ML 분석</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-partial">◐</td>
+                            <td class="feature-no">✗</td>
+                        </tr>
+                        <tr>
+                            <td>오픈소스</td>
+                            <td class="feature-no">✗</td>
+                            <td class="feature-no">✗</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>클라우드 네이티브</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-check">✓</td>
+                            <td class="feature-partial">◐</td>
+                        </tr>
+                        <tr>
+                            <td>비용</td>
+                            <td>$$$$</td>
+                            <td>$$$$</td>
+                            <td>$</td>
+                            <td>무료</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        let demoInterval;
+        let errorCount = 0;
+        let requestCount = 0;
+        
+        function showComponentDetail(component) {
+            console.log(`${component} 컴포넌트 상세 정보`);
+        }
+        
+        function updateMetric(id, name, value, status = 'good') {
+            let metric = document.getElementById(id);
+            if (!metric) {
+                metric = document.createElement('div');
+                metric.id = id;
+                metric.className = 'demo-metric';
+                document.getElementById('metricsContainer').appendChild(metric);
+            }
+            
+            metric.innerHTML = `
+                <span class="demo-metric-name">${name}</span>
+                <span class="demo-metric-value ${status}">${value}</span>
+            `;
+        }
+        
+        function generateRandomMetrics() {
+            requestCount += Math.floor(Math.random() * 50) + 10;
+            const responseTime = Math.floor(Math.random() * 100) + 150;
+            const cpuUsage = Math.floor(Math.random() * 20) + 40;
+            const memoryUsage = Math.floor(Math.random() * 15) + 60;
+            const errorRate = (errorCount / requestCount * 100).toFixed(2);
+            
+            updateMetric('response-time', '평균 응답 시간', `${responseTime}ms`, 
+                responseTime > 300 ? 'warning' : 'good');
+            
+            updateMetric('throughput', '처리량', `${Math.floor(Math.random() * 100) + 900} req/s`, 'good');
+            
+            updateMetric('error-rate', '에러율', `${errorRate}%`, 
+                errorRate > 1 ? 'critical' : errorRate > 0.5 ? 'warning' : 'good');
+            
+            updateMetric('cpu', 'CPU 사용률', `${cpuUsage}%`, 
+                cpuUsage > 80 ? 'warning' : 'good');
+            
+            updateMetric('memory', '메모리 사용률', `${memoryUsage}%`, 
+                memoryUsage > 85 ? 'warning' : 'good');
+            
+            updateMetric('active-users', '활성 사용자', `${Math.floor(Math.random() * 500) + 1000}명`, 'good');
+        }
+        
+        function startDemo() {
+            if (demoInterval) {
+                clearInterval(demoInterval);
+            }
+            
+            errorCount = 0;
+            requestCount = 0;
+            
+            generateRandomMetrics();
+            demoInterval = setInterval(generateRandomMetrics, 2000);
+        }
+        
+        function simulateHighLoad() {
+            const iterations = 5;
+            let count = 0;
+            
+            const highLoadInterval = setInterval(() => {
+                updateMetric('response-time', '평균 응답 시간', 
+                    `${Math.floor(Math.random() * 500) + 800}ms`, 'critical');
+                updateMetric('cpu', 'CPU 사용률', `${Math.floor(Math.random() * 10) + 85}%`, 'critical');
+                updateMetric('memory', '메모리 사용률', `${Math.floor(Math.random() * 5) + 90}%`, 'critical');
+                
+                count++;
+                if (count >= iterations) {
+                    clearInterval(highLoadInterval);
+                }
+            }, 500);
+        }
+        
+        function simulateError() {
+            errorCount += Math.floor(Math.random() * 50) + 20;
+            
+            const alertMetric = document.createElement('div');
+            alertMetric.className = 'demo-metric';
+            alertMetric.style.background = '#7f1d1d';
+            alertMetric.innerHTML = `
+                <span class="demo-metric-name">⚠️ 알림</span>
+                <span class="demo-metric-value critical">데이터베이스 연결 오류 발생!</span>
+            `;
+            
+            const container = document.getElementById('metricsContainer');
+            container.insertBefore(alertMetric, container.firstChild);
+            
+            setTimeout(() => {
+                alertMetric.remove();
+            }, 5000);
+        }
+        
+        function resetDemo() {
+            if (demoInterval) {
+                clearInterval(demoInterval);
+            }
+            
+            document.getElementById('metricsContainer').innerHTML = '';
+            errorCount = 0;
+            requestCount = 0;
+            
+            const resetMessage = document.createElement('div');
+            resetMessage.style.textAlign = 'center';
+            resetMessage.style.color = '#94a3b8';
+            resetMessage.style.marginTop = '50px';
+            resetMessage.textContent = '모니터링이 초기화되었습니다. "모니터링 시작" 버튼을 클릭하세요.';
+            document.getElementById('metricsContainer').appendChild(resetMessage);
+        }
+        
+        // 페이지 로드 시 애니메이션
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.section').forEach((section, index) => {
+                section.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+        
+        // 데모 자동 시작
+        setTimeout(() => {
+            const demoMessage = document.createElement('div');
+            demoMessage.style.textAlign = 'center';
+            demoMessage.style.color = '#94a3b8';
+            demoMessage.style.marginTop = '50px';
+            demoMessage.textContent = '"모니터링 시작" 버튼을 클릭하여 실시간 메트릭을 확인하세요';
+            document.getElementById('metricsContainer').appendChild(demoMessage);
+        }, 1000);
+    </script>
+</body>
+</html>
